@@ -1,0 +1,8 @@
+POST http://localhost:3001/api/clubs
+Content-Type: application/json
+
+{
+  "name": "Hiisiveden melat",
+  "location": "Hiisivesi",
+  "email": "hiisivedenmelat@gmail.com"
+}
