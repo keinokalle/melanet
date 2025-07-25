@@ -1,6 +1,6 @@
 const router = require('express').Router()
 
-const { Club } = require('../models')
+const { Club, Equipment } = require('../models')
 
 const clubFinder = async (req, res, next) => {
   req.club = await Club.findByPk(req.params.id)
@@ -8,7 +8,12 @@ const clubFinder = async (req, res, next) => {
 }
 
 router.get('/', async (req, res) => {
-  const clubs = await Club.findAll()
+  const clubs = await Club.findAll({
+    include: {
+      model: Equipment,
+      //attributes: ['id', 'name', 'type', 'length', 'weight', 'maxWeight', 'yearBought', 'price']
+    }
+  })
   console.log('GET /api/clubs')
   console.log(JSON.stringify(clubs, null, 2))
   res.json(clubs)

@@ -1,27 +1,34 @@
 const logger = require('./logger')
+const jwt = require('jsonwebtoken')
+const { SECRET } = require('./config')
 
-const requestLogger = (request, response, next) => {
-  logger.info('Method:', request.method)
-  logger.info('Path:  ', request.path)
-  logger.info('Body:  ', request.body)
+const requestLogger = (req, res, next) => {
+  logger.info('Method:', req.method)
+  logger.info('Path:  ', req.path)
+  logger.info('Body:  ', req.body)
   logger.info('---')
   next()
 }
 
-/*
-Soon-to-be-used token extractor
-
-const tokenExtractor = (request, response, next) => {
-  const authorization = request.get('authorization')
-  if (authorization && authorization.startsWith('Bearer ')) {
-    request.token = authorization.replace('Bearer ', '')
+const tokenExtractor = (req, res, next) => {
+  const authorization = req.get('authorization')
+  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+    try {
+      console.log(authorization.substring(7))
+      req.decodedToken = jwt.verify(authorization.substring(7), SECRET)
+      console.log('what the fuck is decoded token')
+      console.log(req.decodedToken)
+    } catch (error){
+      console.log(error)
+      return res.status(401).json({ error: 'token invalid' })
+    }
   } else {
-    request.token = null
+    return res.status(401).json({ error: 'token missing' })
   }
   next()
 }
-*/
 
 module.exports = {
-  requestLogger
+  requestLogger,
+  tokenExtractor
 }
