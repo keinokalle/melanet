@@ -22,6 +22,7 @@ router.get('/', async (req, res) => {
   res.json(equipments)
 })
 
+
 // Get equipment by its id
 router.get('/:id', equipmentFinder, async (req, res) => {
   if (req.equipment) {

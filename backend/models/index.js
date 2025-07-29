@@ -1,6 +1,8 @@
 const User = require('./user')
 const Club = require('./club')
 const Equipment = require('./equipment')
+const Membership = require('./membership')
+const Paddle = require('./paddle')
 /*
 * This file is mainly used for exporting the models all at once
 * instead of importing them one by one.
@@ -8,12 +10,18 @@ const Equipment = require('./equipment')
 Club.hasMany(Equipment)
 Equipment.belongsTo(Club)
 
-User.sync({ alter: true })
-Club.sync({ alter: true })
-Equipment.sync({ alter: true })
+Paddle.belongsTo(User)
+Paddle.belongsTo(Club)
+Paddle.belongsTo(Equipment)
+
+User.belongsToMany(Club, { through: Membership })
+Club.belongsToMany(User, { through: Membership })
+
 
 module.exports = {
   User,
   Club,
-  Equipment
+  Equipment,
+  Membership,
+  Paddle
 }

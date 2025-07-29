@@ -15,11 +15,7 @@ Equipment.init({
     allowNull: false
   },
   type: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  name: {
-    type: DataTypes.STRING,
+    type: DataTypes.ENUM('kayak', 'canoe', 'paddle', 'other'),
     allowNull: false
   },
   length: {
@@ -41,6 +37,11 @@ Equipment.init({
   price: {
     type: DataTypes.FLOAT,
     allowNull: true
+  },
+  clubId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: { model: 'clubs', key: 'id' },
   }
 }, {
   sequelize,

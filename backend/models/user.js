@@ -33,11 +33,6 @@ User.init({
     allowNull: false,
     unique: true
   },
-  role: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    defaultValue: 'normal'
-  },
   language: {
     type: DataTypes.STRING
   },
@@ -52,3 +47,43 @@ User.init({
 })
 
 module.exports = User
+
+/**
+Future considerations:
+
+email: {
+  type: DataTypes.STRING,
+  unique: true,
+  allowNull: false,
+  validate: {
+    isEmail: true
+  }
+},
+
+lastLogin: {
+  type: DataTypes.DATE
+},
+
+loginCount: {
+  type: DataTypes.INTEGER,
+  defaultValue: 0
+},
+
+emailVerified: {
+  type: DataTypes.BOOLEAN,
+  defaultValue: false
+},
+
+emailVerificationToken: {
+  type: DataTypes.STRING,
+  allowNull: true
+},
+
+preferences: {
+  type: DataTypes.JSON,
+  defaultValue: {}
+},
+
+...
+
+*/

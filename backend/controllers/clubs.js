@@ -7,6 +7,8 @@ const clubFinder = async (req, res, next) => {
   next()
 }
 
+
+// Get all clubs
 router.get('/', async (req, res) => {
   const clubs = await Club.findAll({
     include: {
@@ -29,6 +31,7 @@ router.get('/:id', clubFinder, async (req, res) => {
   }
 })
 
+// Club can be created by superadmins
 router.post('/', async (req, res) => {
   try {  
     const { name, location, email } = req.body
@@ -39,6 +42,8 @@ router.post('/', async (req, res) => {
   }
 })
 
+
+// Club can be modified by club admins (only their own club) and superadmins (all clubs)
 router.put('/:id', clubFinder, async (req, res) => {
   if (req.club) {
     Object.assign(req.club, req.body)
@@ -49,6 +54,7 @@ router.put('/:id', clubFinder, async (req, res) => {
   }
 })
 
+// Club can be only deleted by superadmins
 router.delete('/:id', clubFinder, async (req, res) => {
   if (req.club) {
     await req.club.destroy()
