@@ -28,7 +28,25 @@ const tokenExtractor = (req, res, next) => {
   next()
 }
 
+const isAdmin = async (req, res, next) => {
+  const user = await User.findByPk(req.decodedToken.id)
+  if(user.role !== 'admin' && user.role !== 'superadmin') {
+    return res.status(401).json({ error: 'unauthorized' })
+  }
+  next()
+}
+
+const isSuperAdmin = async (req, res, next) => {
+  const user = await User.findByPk(req.decodedToken.id)
+  if(user.role !== 'superadmin') {
+    return res.status(401).json({ error: 'unauthorized' })
+  }
+  next()
+}
+
 module.exports = {
   requestLogger,
-  tokenExtractor
+  tokenExtractor,
+  isAdmin,
+  isSuperAdmin
 }
