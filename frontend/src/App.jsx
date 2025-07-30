@@ -2,6 +2,7 @@ import './App.css'
 import { useState, useEffect } from 'react'
 import LogbookView from './components/Logbook/LogbookView'
 import Menu from './components/Menu'
+import LoginView from './components/Login/loginView'
 
 function App() {
   const [section, setSection] = useState('logbook')
@@ -18,6 +19,7 @@ function App() {
       {section === 'reservationCalendar' && <div>Reservation Calendar</div>}
       {section === 'equipment' && <div>Equipment</div>}
       {section === 'statistics' && <div>Statistics</div>}
+      {section === 'login' && <LoginView />}
       <img src="/image.png" alt="Melanet logo" className="melanet-image" />
     </div>
   )
