@@ -12,6 +12,10 @@ const api = supertest(app)
 let testTokenSuperadmin
 let testToken
 
+/*
+To be continued... first developing the frontend.
+*/
+
 beforeEach(async () => { 
   // Regenerate the database before each test
   
