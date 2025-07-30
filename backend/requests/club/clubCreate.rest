@@ -3,6 +3,5 @@ Content-Type: application/json
 
 {
   "name": "Hiisiveden melat",
-  "location": "Hiisivesi",
-  "email": "hiisivedenmelat@gmail.com"
+  "location": "Hiisivesi"
 }

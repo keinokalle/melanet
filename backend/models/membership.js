@@ -13,25 +13,34 @@ Membership.init(
     },
     userId: {
       type: DataTypes.INTEGER,
+      primaryKey: true,
       allowNull: false,
       references: { model: 'users', key: 'id' }
     },
     clubId: {
       type: DataTypes.INTEGER,
+      primaryKey: true,
       allowNull: false,
       references: { model: 'clubs', key: 'id' }
     },
-    role: {
-      type: DataTypes.ENUM('user', 'admin', 'superadmin'),
+    isAdmin: {
+      type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: 'user'
+      defaultValue: false
     }
   },
   {
     sequelize,
+    underscored: true,
     modelName: 'Membership',
     tableName: 'memberships',
-    timestamps: false
+    timestamps: false,
+    indexes: [
+      {
+        unique: true,
+        fields: ['clubId', 'userId']
+      }
+    ]
   }
 );
 

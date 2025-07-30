@@ -1,11 +1,14 @@
 const Sequelize = require('sequelize')
 const { DATABASE_URL } = require('./config')
 const { Umzug, SequelizeStorage } = require('umzug')
+const { info: logInfo, error: logError } = require('./logger')
 
 /**
  * This file is used to connect to the database when the backend starts.
  */
 
+
+/*
 const sequelize = new Sequelize(DATABASE_URL, {
   logging: (sql, queryObject) => {
     console.log('\n' + '='.repeat(50));
@@ -18,14 +21,18 @@ const sequelize = new Sequelize(DATABASE_URL, {
     console.log('='.repeat(50) + '\n');
   }
 })
+*/
+const sequelize = new Sequelize(DATABASE_URL, {
+  logging: false
+})
 
 const connectToDatabase = async () => {
   try {
     await sequelize.authenticate()
     await runMigrations()
-    console.log('database connected')
+    logInfo('Database connected')
   } catch (err) {
-    console.log('connecting database failed')
+    logError('Connecting database failed:', err.message)
     return process.exit(1)
   }
 
@@ -44,9 +51,9 @@ const migrationConf = {
 const runMigrations = async () => {
   const migrator = new Umzug(migrationConf)
   const migrations = await migrator.up()
-  console.log('Migrations up to date', {
-    files: migrations.map((mig) => mig.name),
-  })
+      logInfo('Migrations up to date', {
+      files: migrations.map((mig) => mig.name),
+    })
 }
 
 const rollbackMigration = async () => {

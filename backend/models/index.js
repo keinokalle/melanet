@@ -14,8 +14,11 @@ Paddle.belongsTo(User)
 Paddle.belongsTo(Club)
 Paddle.belongsTo(Equipment)
 
+Membership.belongsTo(User)
+Membership.belongsTo(Club)
 User.belongsToMany(Club, { through: Membership })
 Club.belongsToMany(User, { through: Membership })
+
 
 
 module.exports = {

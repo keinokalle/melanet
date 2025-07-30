@@ -1,0 +1,6 @@
+PUT http://localhost:3001/api/users/15
+Content-Type: application/json
+
+{
+  "isSuperadmin": true
+}

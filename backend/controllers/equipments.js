@@ -1,5 +1,6 @@
 const router = require('express').Router()
 const { tokenExtractor } = require('../util/middlevare')
+const { info: logInfo, error: logError } = require('../util/logger')
 const { Equipment, Club } = require('../models')
 
 // Middleware to find equipment by id
@@ -17,8 +18,8 @@ router.get('/', async (req, res) => {
       attributes: ['name']
     }
   })
-  console.log('GET /api/equipments')
-  console.log(JSON.stringify(equipments, null, 2))
+    logInfo('GET /api/equipments')
+    logInfo('Equipments retrieved:', JSON.stringify(equipments, null, 2))
   res.json(equipments)
 })
 
@@ -26,7 +27,7 @@ router.get('/', async (req, res) => {
 // Get equipment by its id
 router.get('/:id', equipmentFinder, async (req, res) => {
   if (req.equipment) {
-    console.log(req.equipment.toJSON())
+          logInfo('Equipment retrieved:', req.equipment.toJSON())
     res.json(req.equipment)
   } else {
     res.status(404).end()

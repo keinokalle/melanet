@@ -1,4 +1,5 @@
 const router = require('express').Router()
+const { info: logInfo, error: logError } = require('../util/logger')
 
 const { Club, Equipment } = require('../models')
 
@@ -10,21 +11,18 @@ const clubFinder = async (req, res, next) => {
 
 // Get all clubs
 router.get('/', async (req, res) => {
-  const clubs = await Club.findAll({
-    include: {
-      model: Equipment,
-      //attributes: ['id', 'name', 'type', 'length', 'weight', 'maxWeight', 'yearBought', 'price']
-    }
-  })
-  console.log('GET /api/clubs')
-  console.log(JSON.stringify(clubs, null, 2))
+  
+  const clubs = await Club.findAll({})
+  logInfo('GET /api/clubs')
+  logInfo('Clubs retrieved:', JSON.stringify(clubs, null, 2))
   res.json(clubs)
 })
+  
 
 // Get club by its id
 router.get('/:id', clubFinder, async (req, res) => {
   if (req.club) {
-    console.log(req.club.toJSON())
+    logger.info('Club retrieved:', req.club.toJSON())
     res.json(req.club)
   } else {
     res.status(404).end()
@@ -34,11 +32,17 @@ router.get('/:id', clubFinder, async (req, res) => {
 // Club can be created by superadmins
 router.post('/', async (req, res) => {
   try {  
-    const { name, location, email } = req.body
-    const club = await Club.create({ name, location, email })
+    logInfo('POST /api/clubs - Request body:', req.body);
+    const { name, location } = req.body
+    logInfo('Extracted data:', { name, location });
+    
+    const club = await Club.create({ name, location })
+    logInfo('Club created successfully:', club.toJSON());
     res.json(club)
   } catch (error) {
-    res.status(400).json({ error })
+      logError('Error creating club:', error.message);
+      logError('Full error:', error);
+    res.status(400).json({ error: error.message })
   }
 })
 

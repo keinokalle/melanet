@@ -4,6 +4,8 @@ const app = express()
 const { PORT } = require('./util/config')
 const { connectToDatabase } = require('./util/db')
 const { usersRouter, loginRouter, clubsRouter, equipmentsRouter, membershipsRouter, paddlesRouter } = require('./controllers')
+const { unknownEndpoint, errorHandler } = require('./util/middlevare')
+const { info: logInfo } = require('./util/logger')
 
 app.use(express.json())
 
@@ -14,13 +16,19 @@ app.use('/api/equipments', equipmentsRouter)
 app.use('/api/memberships', membershipsRouter)
 app.use('/api/paddles', paddlesRouter)
 
-console.log('What the date looks like:', new Date())
+app.use(unknownEndpoint)
+app.use(errorHandler)
 
 const start = async () => {
   await connectToDatabase()
   app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`)
+    logInfo(`Server running on port ${PORT}`)
   })
 }
 
-start()
+// Only start the server if this file is run directly
+if (require.main === module) {
+  start()
+}
+
+module.exports = app

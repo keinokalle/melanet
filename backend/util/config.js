@@ -2,12 +2,12 @@ require('dotenv').config()
 /*
  * This file is used to store the configuration for the backend.
 */
-const DATABASE_URL = process.env.NODE_ENV === 'test'
+const url = process.env.NODE_ENV === 'test'
   ? process.env.TEST_DATABASE_URL
   : process.env.DATABASE_URL
 
 module.exports = {
-  DATABASE_URL: process.env.DATABASE_URL,
+  DATABASE_URL: url,
   SECRET: process.env.SECRET,
   PORT: process.env.PORT || 3001,
 }

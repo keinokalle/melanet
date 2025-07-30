@@ -103,5 +103,5 @@ module.exports = {
     await queryInterface.dropTable('equipment');
     await queryInterface.dropTable('users');
     await queryInterface.dropTable('clubs');
-  },
+  }
 }

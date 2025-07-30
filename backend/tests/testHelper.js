@@ -2,28 +2,28 @@ const { User, Club, Equipment, Membership, Paddle } = require('../models/index')
 
 const initialUsers = [
   {
-    username: 'heikki',
-    password: '1234',
-    name: 'Heikki Lintula',
-    email: 'testuser@example.com'
+    username: 'jukka',
+    passwordhash: '1234',
+    name: 'Jukka Ponsiluoma',
+    email: 'jukka.ponsiluoma@example.com'
   },
   {
-    username: 'testuser',
-    password: 'testpassword',
-    name: 'Test User',
-    email: 'testuser@example.com'
+    username: 'siiri',
+    passwordhash: 'testpasswordhash',
+    name: 'Siiri Keränen',
+    email: 'siiri.keranen@example.com'
   },
   {
-    username: 'testuser2',
-    password: 'testpassword2',
-    name: 'Test User 2',
-    email: 'testuser2@example.com'
+    username: 'viivi',
+    passwordhash: 'testpasswordhash2',
+    name: 'Viivi Linkonen',
+    email: 'viivi.linkonen@example.com'
   },
   {
-    username: 'testuser3',
-    password: 'testpassword3',
-    name: 'Test User 3',
-    email: 'testuser3@example.com'
+    username: 'venla',
+    passwordhash: 'testpasswordhash3',
+    name: 'Venla Soininen',
+    email: 'venla.soininen@example.com'
   }
 ]
 
@@ -34,14 +34,14 @@ const initialClubs = [
     email: 'melaveikot@example.com'
   },
   {
-    name: 'Test Club 1',
+    name: 'Merimelojat',
     location: 'Test Location 1',
-    email: 'testclub1@example.com'
+    email: 'merimelojat@example.com'
   },
   {
-    name: 'Test Club 2',
+    name: 'Kaarinan melojat',
     location: 'Test Location 2',
-    email: 'testclub2@example.com'
+    email: 'kaarinan.melojat@example.com'
   }
 ]
 
@@ -176,11 +176,23 @@ const usersInDb = async () => {
   return users.map(u => u.toJSON())
 }
 
+const clubsInDb = async () => {
+  const clubs = await Club.findAll({})
+  return clubs.map(c => c.toJSON())
+}
+
+const membershipsInDb = async () => {
+  const memberships = await Membership.findAll({})
+  return memberships.map(m => m.toJSON())
+}
+
 module.exports = {
   initialUsers,
   initialClubs,
   initialMemberships,
   initialEquipments,
   initialPaddles,
-  usersInDb
+  usersInDb,
+  clubsInDb,
+  membershipsInDb
 }

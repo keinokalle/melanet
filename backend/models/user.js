@@ -38,6 +38,11 @@ User.init({
   },
   profilepicture: {
     type: DataTypes.TEXT
+  },
+  isSuperadmin: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
   }
 }, {
   sequelize,

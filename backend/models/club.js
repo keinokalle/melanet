@@ -17,9 +17,6 @@ Club.init({
   },
   location: {
     type: DataTypes.STRING
-  },
-  email: {
-    type: DataTypes.STRING
   }
 }, {
   sequelize,
