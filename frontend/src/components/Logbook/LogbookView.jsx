@@ -1,4 +1,5 @@
 import Paddle from './Paddle'
+import Users from './testUser'
 import { useState } from 'react'
 import Form from './Form'
 
@@ -54,6 +55,9 @@ function LogbookView() {
       {showForm && (
         <Form onAdd={handleAddPaddle} onCancel={() => setShowForm(false)} />
       )}
+      <div>
+        <Users />
+      </div>
       <div className="paddleList">
         {paddles
           .sort((a, b) => new Date(b.date) - new Date(a.date))

@@ -6,6 +6,11 @@ const getAll = async () => {
   return response.data;
 };
 
+const getById = async (id) => {
+  const response = await axios.get(`${baseUrl}/${id}`);
+  return response.data;
+};
+
 const create = async (newPaddle) => {
   const response = await axios.post(baseUrl, newPaddle);
   return response.data;
@@ -23,6 +28,7 @@ const remove = async (id) => {
 
 const paddlesService = {
   getAll,
+  getById,
   create,
   update,
   remove,
