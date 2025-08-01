@@ -154,11 +154,14 @@
 .paddleStatusCompleted {
   background: #4caf50;
 }
-.paddleStatusInprogress {
+.paddleStatusInProgress {
   background: #ff9800;
 }
-.paddleStatusPlanned {
+.paddleStatusScheduled {
   background: #2196f3;
+}
+.paddleStatusPlanned {
+  background: #6c757d;
 }
 
 .formBackdrop {
@@ -182,4 +185,63 @@
   box-shadow: 0 8px 32px rgba(0,0,0,0.18);
   z-index: 1001;
   min-width: 320px;
+}
+
+.formModal h3 {
+  margin: 0 0 1.5rem 0;
+  color: #333;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.formModal form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.formModal input,
+.formModal textarea {
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.formModal input:focus,
+.formModal textarea:focus {
+  outline: none;
+  border-color: #2196f3;
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+}
+
+.formModal button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.formModal button[type="submit"] {
+  background: #2196f3;
+  color: white;
+  margin-bottom: 0.5rem;
+}
+
+.formModal button[type="submit"]:hover {
+  background: #1976d2;
+  transform: translateY(-1px);
+}
+
+.formModal button[type="button"] {
+  background: #f5f5f5;
+  color: #333;
+}
+
+.formModal button[type="button"]:hover {
+  background: #e0e0e0;
 }

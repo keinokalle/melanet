@@ -11,7 +11,7 @@ const clubFinder = async (req, res, next) => {
 
 // Get all clubs
 router.get('/', async (req, res) => {
-  
+  logInfo('GET /api/clubs')
   const clubs = await Club.findAll({})
   logInfo('GET /api/clubs')
   logInfo('Clubs retrieved:', JSON.stringify(clubs, null, 2))

@@ -2,7 +2,10 @@
  * Paddle card component for displaying a single logbook entry.
  */
 
-function Paddle({id, startTime, endTime, equipment, user, info, canEdit, onDelete }) {
+function Paddle({ paddle, onDelete, onModify }) {
+  // Destructure all the properties from the paddle object
+  const { id, startTime, endTime, equipment, user, info, canEdit, clubId, equipmentId } = paddle;
+
   // Format the datetime strings for display
   const formatDateTime = (dateTimeString) => {
     if (!dateTimeString) return 'Not set';
@@ -45,13 +48,31 @@ function Paddle({id, startTime, endTime, equipment, user, info, canEdit, onDelet
     return 'Completed';
   };
 
+  const getStatusClassName = (status) => {
+    switch (status) {
+      case 'Completed':
+        return 'paddleStatusCompleted';
+      case 'In Progress':
+        return 'paddleStatusInProgress';
+      case 'Scheduled':
+        return 'paddleStatusScheduled';
+      case 'Planned':
+        return 'paddleStatusPlanned';
+      default:
+        return 'paddleStatusCompleted';
+    }
+  };
+
   const status = calculateStatus();
 
   return (
     <div className="paddleCard">
       {canEdit && (
         <div className="paddleCardOptions">
-          <button>Modify</button>
+          <button onClick={() => {
+            console.log('Modify button clicked with paddle data:', {id, startTime, endTime, equipment, user, info, clubId, equipmentId});
+            onModify({id, startTime, endTime, equipment, user, info, clubId, equipmentId});
+          }}>Modify</button>
           <button onClick={() => onDelete(id)} >Delete</button>
         </div>
       )}
@@ -79,7 +100,7 @@ function Paddle({id, startTime, endTime, equipment, user, info, canEdit, onDelet
       )}
       <div className="paddleRow">
         <span className="paddleLabel">Status:</span> 
-        <span className={`paddleStatus paddleStatus${status.replace(/\s/g, '')}`}>
+        <span className={`paddleStatus ${getStatusClassName(status)}`}>
           {status}
         </span>
       </div>
