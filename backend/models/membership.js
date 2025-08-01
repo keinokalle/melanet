@@ -13,13 +13,11 @@ Membership.init(
     },
     userId: {
       type: DataTypes.INTEGER,
-      primaryKey: true,
       allowNull: false,
       references: { model: 'users', key: 'id' }
     },
     clubId: {
       type: DataTypes.INTEGER,
-      primaryKey: true,
       allowNull: false,
       references: { model: 'clubs', key: 'id' }
     },
@@ -42,6 +40,6 @@ Membership.init(
       }
     ]
   }
-);
+)
 
 module.exports = Membership;

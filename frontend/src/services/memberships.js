@@ -7,6 +7,11 @@ const getAll = async () => {
   return response.data
 }
 
+const getByUserId = async (userId) => {
+  const response = await axios.get(`${baseUrl}/user/${userId}`)
+  return response.data
+}
+
 const getById = async (id) => {
   const response = await axios.get(`${baseUrl}/${id}`)
   return response.data
@@ -27,5 +32,5 @@ const remove = async (id) => {
   return response.data
 }
 
-const membershipsService = { getAll, getById, getByClubId, create, remove }
+const membershipsService = { getAll, getByUserId, getById, getByClubId, create, remove }
 export default membershipsService 

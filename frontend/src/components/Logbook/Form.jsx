@@ -5,18 +5,36 @@ import { useState } from 'react'
  * @param {Object} props
  * @param {Function} props.onAdd - Called with new paddle data when form is submitted.
  * @param {Function} [props.onCancel] - Called when the form is cancelled.
+ * @param {string} props.clubId - The ID of the current club
  * @returns {JSX.Element} – An popup window for adding the new paddling data
  */
 
-function Form({ onAdd, onCancel }) {
+function Form({ onAdd, onCancel, clubId }) {
+  // Calculate default start time (current time + 10 minutes) in Finland timezone
+  const getDefaultStartTime = () => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() + 10);
+    
+    // Convert to Finland timezone (Europe/Helsinki)
+    const finlandTime = new Date(now.toLocaleString("en-US", {timeZone: "Europe/Helsinki"}));
+    
+    // Format for datetime-local input (YYYY-MM-DDTHH:MM)
+    const year = finlandTime.getFullYear();
+    const month = String(finlandTime.getMonth() + 1).padStart(2, '0');
+    const day = String(finlandTime.getDate()).padStart(2, '0');
+    const hours = String(finlandTime.getHours()).padStart(2, '0');
+    const minutes = String(finlandTime.getMinutes()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
   const [newPaddle, setNewPaddle] = useState({
-    date: '',
-    name: '',
-    kayak: '',
-    route: '',
-    starttime: '',
-    endtime: '',
-    status: '',
+    startTime: getDefaultStartTime(),
+    endTime: getDefaultStartTime(), // '',
+    info: '',
+    userId: localStorage.getItem('userId') || '',
+    clubId: clubId || '',
+    equipmentId: 1 // ''
   })
 
   const handleInputChange = (e) => {
@@ -29,25 +47,36 @@ function Form({ onAdd, onCancel }) {
 
   const handleAddPaddle = (e) => {
     e.preventDefault();
+    
+    // Validate required fields
     if (
-      newPaddle.date &&
-      newPaddle.name &&
-      newPaddle.kayak &&
-      newPaddle.route &&
-      newPaddle.starttime &&
-      newPaddle.status
+      newPaddle.startTime &&
+      newPaddle.userId &&
+      newPaddle.clubId &&
+      newPaddle.equipmentId
     ) {
-      onAdd({ ...newPaddle });
+      // Convert date and time to proper datetime format for backend
+      const startDateTime = new Date(newPaddle.startTime).toISOString();
+      const endDateTime = newPaddle.endTime ? new Date(newPaddle.endTime).toISOString() : null;
+      
+      const paddleData = {
+        ...newPaddle,
+        startTime: startDateTime,
+        endTime: endDateTime
+      };
+      
+      onAdd(paddleData);
       setNewPaddle({
-        date: '',
-        name: '',
-        kayak: '',
-        route: '',
-        starttime: '',
-        endtime: '',
-        status: '',
+        startTime: getDefaultStartTime(),
+        endTime: '',
+        info: '',
+        userId: localStorage.getItem('userId') || '',
+        clubId: clubId || '',
+        equipmentId: ''
       });
       if (onCancel) onCancel();
+    } else {
+      alert('Please fill in all required fields: Start Time, Equipment ID');
     }
   };
 
@@ -57,60 +86,35 @@ function Form({ onAdd, onCancel }) {
       <div className="formModal">
         <form onSubmit={handleAddPaddle}>
           <input
-            name="date"
-            type="date"
-            value={newPaddle.date}
+            name="startTime"
+            type="datetime-local"
+            value={newPaddle.startTime}
             onChange={handleInputChange}
-            placeholder="Date"
+            placeholder="Start Date & Time"
             required
           />
           <input
-            name="name"
-            value={newPaddle.name}
+            name="endTime"
+            type="datetime-local"
+            value={newPaddle.endTime}
             onChange={handleInputChange}
-            placeholder="Name"
-            required
+            placeholder="End Date & Time (optional)"
           />
           <input
-            name="kayak"
-            value={newPaddle.kayak}
+            name="equipmentId"
+            type="number"
+            value={newPaddle.equipmentId}
             onChange={handleInputChange}
-            placeholder="Kayak"
+            placeholder="Equipment ID"
             required
           />
-          <input
-            name="route"
-            value={newPaddle.route}
+          <textarea
+            name="info"
+            value={newPaddle.info}
             onChange={handleInputChange}
-            placeholder="Route"
-            required
+            placeholder="Additional Information (optional)"
+            rows="3"
           />
-          <input
-            name="starttime"
-            type="time"
-            value={newPaddle.starttime}
-            onChange={handleInputChange}
-            placeholder="Start Time"
-            required
-          />
-          <input
-            name="endtime"
-            type="time"
-            value={newPaddle.endtime}
-            onChange={handleInputChange}
-            placeholder="End Time"
-          />
-          <select
-            name="status"
-            value={newPaddle.status}
-            onChange={handleInputChange}
-            required
-          >
-            <option value="">Select Status</option>
-            <option value="Completed">Completed</option>
-            <option value="In progress">In progress</option>
-            <option value="Planned">Planned</option>
-          </select>
           <button type="submit">Add Paddle</button>
           {onCancel && (
             <button type="button" onClick={onCancel}>Cancel</button>

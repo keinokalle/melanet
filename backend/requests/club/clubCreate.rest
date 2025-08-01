@@ -2,6 +2,6 @@ POST http://localhost:3001/api/clubs
 Content-Type: application/json
 
 {
-  "name": "Hiisiveden melat",
-  "location": "Hiisivesi"
+  "name": "Merimelojat",
+  "location": "Taka-Töölö"
 }

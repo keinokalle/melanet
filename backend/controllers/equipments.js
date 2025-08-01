@@ -35,7 +35,7 @@ router.get('/:id', equipmentFinder, async (req, res) => {
 })
 
 // Create new equipment
-router.post('/', tokenExtractor, async (req, res) => {
+router.post('/', async (req, res) => {
   try {  
     const randomClub = await Club.findOne() // To be changed
     const equipment = await Equipment.create({...req.body, clubId: randomClub.id})

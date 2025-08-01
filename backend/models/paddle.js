@@ -15,12 +15,7 @@ Paddle.init({
   },
   endTime: {
     type: DataTypes.DATE,
-    allowNull: false
-  },
-  ended: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false,
-    defaultValue: false
+    allowNull: true
   },
   info: {
     type: DataTypes.TEXT,
@@ -28,7 +23,7 @@ Paddle.init({
   },
   userId: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true,
     references: {
       model: 'users',
       key: 'id'
@@ -36,7 +31,7 @@ Paddle.init({
   },
   clubId: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true,
     references: {
       model: 'clubs',
       key: 'id'
@@ -44,7 +39,7 @@ Paddle.init({
   },
   equipmentId: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true,
     references: {
       model: 'equipment',
       key: 'id'

@@ -1,68 +1,72 @@
 import Paddle from './Paddle'
-import Users from './testUser'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Form from './Form'
+import paddlesService from '../../services/paddles'
 
 /**
 /**
  * Displays the full logbook page, including the list of paddling entries and the form to add new entries.
  * @component 
- * @param {Object} props - No props are required for this component.
+ * @param {Object} props - Component props
+ * @param {string} props.clubId - The ID of the current club
  * @returns {JSX.Element} The rendered logbook view.
  */
 
-function LogbookView() {
-  const [paddles, setPaddles] = useState([
-    {
-      date: '2024-06-01',
-      name: 'Kalle Keinonen',
-      kayak: 'K1',
-      route: 'Lake Helsinki',
-      starttime: '08:00',
-      endtime: '10:00',
-      status: 'Completed',
-    },
-    {
-      date: '2024-06-02',
-      name: 'Oona Keinonen',
-      kayak: 'K2',
-      route: 'River Vantaa',
-      starttime: '09:30',
-      endtime: '12:00',
-      status: 'Completed',
-    },
-    {
-      date: '2024-06-02',
-      name: 'Ella Keinonen',
-      kayak: 'C1',
-      route: 'Archipelago Trail',
-      starttime: '07:15',
-      endtime: '',
-      status: 'In progress',
-    },
-  ])
+function LogbookView({ clubId }) {
+  const [paddles, setPaddles] = useState([])
   const [showForm, setShowForm] = useState(false)
 
+  useEffect(() => {
+    if (clubId) {
+      paddlesService.getByClubId(clubId)
+        .then(data => setPaddles(data))
+        .catch(err => {
+          console.error('Failed to fetch paddles:', err);
+          setPaddles([]);
+        });
+    }
+  }, [clubId])
+    
+
   const handleAddPaddle = (newPaddle) => {
-    setPaddles(prev => [newPaddle, ...prev])
+    paddlesService.create(newPaddle)
+      .then(createdPaddle => {
+        setPaddles(prev => [createdPaddle, ...prev]);
+      })
+      .catch(err => {
+        console.error('Failed to create paddle:', err);
+        // Optionally, show an error message to the user here
+      })
+  }
+
+  const handleDeletePaddle = (paddleId) => {
+    console.log("YOU WANT TO DELETE???");
+    
+    paddlesService.remove(paddleId)
+      .then(() => {
+        const newPaddles = paddles.filter(p => p.id !== paddleId)
+        setPaddles(newPaddles);
+      })
+      .catch(err => {
+        console.error('Failed to delete paddle:', err);
+        // Optionally, show an error message to the user here
+      })
   }
 
   return (
     <div>
+      {clubId && <h2>Logbook for Club {clubId}</h2>}
       <button onClick={() => setShowForm(s => !s)}>
-        {showForm ? 'Cancel' : 'Create New Paddle'}
+        {showForm ? 'Cancel' : 'New Paddle'}
       </button>
       {showForm && (
-        <Form onAdd={handleAddPaddle} onCancel={() => setShowForm(false)} />
+        <Form onAdd={handleAddPaddle} onCancel={() => setShowForm(false)} clubId={clubId} />
       )}
-      <div>
-        <Users />
-      </div>
       <div className="paddleList">
         {paddles
-          .sort((a, b) => new Date(b.date) - new Date(a.date))
+          .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
           .map((paddle, idx) => (
-            <Paddle key={idx} {...paddle} />
+            <Paddle key={idx} {...paddle} onDelete={handleDeletePaddle}/> 
           ))}
       </div>
     </div>

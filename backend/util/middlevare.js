@@ -1,4 +1,4 @@
-const { info: logInfo, error: logError } = require('./logger')
+const { info: logInfo, error: logError, info } = require('./logger')
 const jwt = require('jsonwebtoken')
 const { SECRET } = require('./config')
 const { Membership, User } = require('../models')
@@ -32,12 +32,14 @@ const errorHandler = (err, req, res, next) => {
 }
 
 const tokenExtractor = (req, res, next) => {
+  logInfo("starting to extract token")
   const authorization = req.get('authorization')
   if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
     try {
       logInfo('Token extracted:', authorization.substring(7))
       req.decodedToken = jwt.verify(authorization.substring(7), SECRET)
       logInfo('Token decoded successfully:', req.decodedToken)
+      logInfo('TOKEN THING DONE!!!')
     } catch (error){
       logError('Token verification failed:', error)
       return res.status(401).json({ error: 'token invalid' })
@@ -48,17 +50,77 @@ const tokenExtractor = (req, res, next) => {
   next()
 }
 
-const isAdmin = async (req, res, next) => {
-  // Checking this later
-  /*
-  const user = await Membership.findByPk(req.decodedToken.id)
-  if(user.role !== 'admin' && user.role !== 'superadmin') {
-    return res.status(401).json({ error: 'unauthorized' })
+// Checks if a user is a member of the club at hand
+const isMember = async (req, res, next) => {
+  const clubId = req.params.clubId;
+  const userId = req.decodedToken.id;
+  
+  console.log('🔍 Checking membership for user:', userId, 'club:', clubId);
+  
+  try {
+    // First check if user is a superadmin
+    const user = await User.findByPk(userId);
+    if (user && user.isSuperadmin) {
+      console.log('✅ User is superadmin');
+      return next();
+    }
+    
+    // Then check if user is a member of the specific club
+    const membership = await Membership.findOne({
+      where: {
+        userId: userId,
+        clubId: clubId
+      }
+    });
+    
+    console.log('🔍 Found membership:', membership ? 'YES' : 'NO');
+    
+    if (!membership) {
+      console.log('❌ User not a member of club:', clubId);
+      return res.status(401).json({ error: 'unauthorized' });
+    }
+    
+    console.log('✅ User is a member of the club');
+    next();
+  } catch (error) {
+    console.error('❌ Error in isMember:', error);
+    return res.status(500).json({ error: 'Internal server error' });
   }
-  */
-  next()
 }
 
+// Checks if a user is a club admin for the club at hand
+const isAdmin = async (req, res, next) => {
+  const clubId = req.params.clubId;
+  const userId = req.decodedToken.id;
+  
+  try {
+    // First check if user is a superadmin
+    const user = await User.findByPk(userId);
+    if (user && user.isSuperadmin) {
+      return next();
+    }
+    
+    // Then check if user is a club admin for the specific club
+    const membership = await Membership.findOne({
+      where: {
+        userId: userId,
+        clubId: clubId,
+        isAdmin: true
+      }
+    });
+    
+    if (!membership) {
+      return res.status(401).json({ error: 'unauthorized' });
+    }
+    
+    logInfo('HOOORAAYYYY!! User is a club admin')
+    next();
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+// Checks if a user is a superadmin
 const isSuperAdmin = async (req, res, next) => {
   const user = await User.findByPk(req.decodedToken.id)
   if(!user.isSuperadmin) {
@@ -70,6 +132,7 @@ const isSuperAdmin = async (req, res, next) => {
 module.exports = {
   requestLogger,
   tokenExtractor,
+  isMember,
   isAdmin,
   isSuperAdmin,
   unknownEndpoint,

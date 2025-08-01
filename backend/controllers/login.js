@@ -49,7 +49,7 @@ router.post('/', requestLogger, async (request, response) => {
   logInfo('Successful login for user:', user.username)
   response
     .status(200)
-    .send({ token, username: user.username, name: user.name })
+    .send({ token, username: user.username, name: user.name, id: user.id })
 })
 
 module.exports = router
