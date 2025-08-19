@@ -23,6 +23,28 @@ router.get('/', async (req, res) => {
   res.json(equipments)
 })
 
+// Get all equipments for a specific club
+router.get('/club/:clubId', async (req, res) => {
+  const { clubId } = req.params
+  try {
+    const equipments = await Equipment.findAll({
+      where: { clubId },
+      attributes: { exclude: ['clubId'] },
+      include: {
+        model: Club,
+        attributes: ['name', 'id']
+      }
+    })
+    logInfo(`GET /api/equipments/club/${clubId}`)
+    logInfo('Equipments for club retrieved:', JSON.stringify(equipments, null, 2))
+    res.json(equipments)
+  } catch (error) {
+    logError('Error retrieving equipments for club:', error)
+    res.status(500).json({ error: 'Failed to retrieve equipments for the specified club.' })
+  }
+})
+
+
 
 // Get equipment by its id
 router.get('/:id', equipmentFinder, async (req, res) => {
@@ -37,8 +59,7 @@ router.get('/:id', equipmentFinder, async (req, res) => {
 // Create new equipment
 router.post('/', async (req, res) => {
   try {  
-    const randomClub = await Club.findOne() // To be changed
-    const equipment = await Equipment.create({...req.body, clubId: randomClub.id})
+    const equipment = await Equipment.create({...req.body})
     res.json(equipment)
   } catch (error) {
     res.status(400).json({ error })

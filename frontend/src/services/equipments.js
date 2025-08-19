@@ -7,6 +7,11 @@ const getAll = async () => {
   return response.data
 }
 
+const getByClubId = async (clubId) => {
+  const response = await axios.get(`${baseUrl}/club/${clubId}`)
+  return response.data
+}
+
 const getById = async (id) => {
   const response = await axios.get(`${baseUrl}/${id}`)
   return response.data
@@ -27,5 +32,5 @@ const remove = async (id) => {
   return response.data
 }
 
-const equipmentsService = { getAll, getById, create, update, remove }
+const equipmentsService = { getAll, getByClubId, getById, create, update, remove }
 export default equipmentsService 

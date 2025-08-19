@@ -2,9 +2,9 @@ POST http://localhost:3001/api/users
 Content-Type: application/json
 
 {
-  "username": "kalle",
-  "password": "kalle",
-  "email": "kallejee@test.com",
-  "name": "Kalle Penttinen",
-  "isSuperadmin": true
+  "username": "Ella",
+  "password": "1234",
+  "email": "ella@test.com",
+  "name": "Ella Keinonen",
+  "isSuperadmin": false
 }

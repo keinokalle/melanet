@@ -2,12 +2,12 @@ POST http://localhost:3001/api/equipments
 Content-Type: application/json
 
 {
-  "type": "canoe",
-  "name": "kanoottikampela",
+  "type": "kayak",
+  "name": "Sea Cat 35",
   "length": 6.5,
   "weight": 13.5,
   "maxWeight": 100.0,
   "yearBought": 2022,
   "price": 700.0,
-  "clubId": 1
+  "clubId": 2
 }

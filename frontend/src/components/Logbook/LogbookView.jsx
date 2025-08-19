@@ -24,11 +24,37 @@ function LogbookView({clubId, memberships, setClubChange}) {
   // Helper function to add toasts
   const addToast = (toast) => {
     setToasts(prev => [...prev, toast])
-    // Auto-remove toast after 5 seconds
+    // Auto-remove toast after 9 seconds
     setTimeout(() => {
       setToasts(prev => prev.filter(t => t.id !== toast.id))
     }, 9000)
   }
+
+  // Derived state for paddling status
+  const getPaddlingStatus = () => {
+    const userId = localStorage.getItem('userId')
+    if (!userId) return { isPaddling: false, activePaddle: null, hasMultipleActive: false }
+
+    const activePaddles = paddles.filter(paddle => 
+      paddle.userId === parseInt(userId) && 
+      paddle.startTime && 
+      !paddle.endTime
+    )
+
+    if (activePaddles.length === 0) {
+      return { isPaddling: false, activePaddle: null, hasMultipleActive: false }
+    } else if (activePaddles.length === 1) {
+      return { isPaddling: true, activePaddle: activePaddles[0], hasMultipleActive: false }
+    } else {
+      // Multiple active paddles - this shouldn't happen but we handle it gracefully
+      console.warn(`User ${userId} has ${activePaddles.length} active paddles. This may indicate a data inconsistency.`)
+      // Return the most recent active paddle
+      const mostRecent = activePaddles.sort((a, b) => new Date(b.startTime) - new Date(a.startTime))[0]
+      return { isPaddling: true, activePaddle: mostRecent, hasMultipleActive: true }
+    }
+  }
+
+  const { isPaddling, activePaddle, hasMultipleActive } = getPaddlingStatus()
 
   useEffect(() => {
     if (clubId) {
@@ -53,6 +79,8 @@ function LogbookView({clubId, memberships, setClubChange}) {
     setIsLoading(true)
     if (modifyPaddle) {
       // Update existing paddle
+      console.log('This is the paddle that is to be updated', paddleData)
+
       paddlesService.update(modifyPaddle.id, paddleData)
         .then(updatedPaddle => {
           setPaddles(prev => prev.map(p => p.id === modifyPaddle.id ? updatedPaddle : p))
@@ -61,6 +89,20 @@ function LogbookView({clubId, memberships, setClubChange}) {
         })
         .catch(err => {
           const { errorMessage, errorTitle } = handleApiError(err, 'paddle update')
+          addToast(createToast(errorMessage, errorTitle))
+        })
+        .finally(() => {
+          setIsLoading(false)
+        })
+    } else if (isPaddling && activePaddle) {
+      // End existing paddle
+      paddlesService.update(activePaddle.id, paddleData)
+        .then(updatedPaddle => {
+          setPaddles(prev => prev.map(p => p.id === activePaddle.id ? updatedPaddle : p))
+          addToast(createToast('Paddle ended successfully!', 'Success', 'success'))
+        })
+        .catch(err => {
+          const { errorMessage, errorTitle } = handleApiError(err, 'ending paddle')
           addToast(createToast(errorMessage, errorTitle))
         })
         .finally(() => {
@@ -111,6 +153,28 @@ function LogbookView({clubId, memberships, setClubChange}) {
     setModifyPaddle(null)
   }
 
+  const handleMainButtonClick = () => {
+    if (isPaddling && activePaddle) {
+      // End paddle - show form with active paddle data
+      setModifyPaddle(activePaddle)
+    } else {
+      // New paddle - show empty form
+      setShowForm(true)
+    }
+  }
+
+  /*
+  // Show warning toast if multiple active paddles detected
+  useEffect(() => {
+    if (hasMultipleActive) {
+      addToast(createToast(
+        'Multiple active paddles detected. Please contact support if this persists.',
+        'Warning',
+        'warning'
+      ))
+    }
+  }, [hasMultipleActive])
+  */
   return (
     <Container fluid>
       {/* Toast Container for notifications */}
@@ -154,7 +218,7 @@ function LogbookView({clubId, memberships, setClubChange}) {
               </Dropdown>
             </div>
           ) : (
-            <h2>Logbook for {memberships[clubId].clubName}</h2>
+            <h2>Logbook for {memberships.find(m => m.clubId === clubId)?.clubName || 'Unknown Club'}</h2>
           )}
         </Col>
       </Row>
@@ -163,30 +227,32 @@ function LogbookView({clubId, memberships, setClubChange}) {
       <Row className="mb-3">
         <Col>
           <Button 
-            variant="primary" 
-            onClick={() => setShowForm(s => !s)}
+            variant={isPaddling ? "warning" : "primary"}
+            onClick={handleMainButtonClick}
             size="lg"
             disabled={isLoading}
           >
-            {isLoading ? 'Loading...' : (showForm ? 'Cancel' : 'New Paddle')}
+            {isLoading ? 'Loading...' : (
+              isPaddling ? 'End Paddle' : 'New Paddle'
+            )}
           </Button>
+          {hasMultipleActive && (
+            <small className="text-warning d-block mt-1">
+              ⚠️ Multiple active paddles detected
+            </small>
+          )}
         </Col>
       </Row>
 
-      {/* Form Section */}
-      {(showForm || modifyPaddle) && (
-        <Row className="mb-4">
-          <Col>
-            <PaddleForm 
-              onSubmit={handleSubmitPaddle} 
-              onCancel={handleCancelForm} 
-              clubId={clubId}
-              paddle={modifyPaddle}
-              isModify={!!modifyPaddle}
-            />
-          </Col>
-        </Row>
-      )}
+      {/* PaddleForm Modal */}
+      <PaddleForm 
+        show={showForm || !!modifyPaddle}
+        onSubmit={handleSubmitPaddle} 
+        onCancel={handleCancelForm} 
+        clubId={clubId}
+        paddle={modifyPaddle}
+        isModify={!!modifyPaddle}
+      />
 
       {/* Paddles List */}
       <Row>

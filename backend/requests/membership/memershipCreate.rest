@@ -2,7 +2,6 @@ POST http://localhost:3001/api/memberships
 Content-Type: application/json
 
 {
-  "userId": 10,
-  "clubId": 1,
-  "isAdmin": true
+  "userId": 21,
+  "clubId": 2
 }
