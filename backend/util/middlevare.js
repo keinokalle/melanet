@@ -42,10 +42,10 @@ const tokenExtractor = (req, res, next) => {
       logInfo('TOKEN THING DONE!!!')
     } catch (error){
       logError('Token verification failed:', error)
-      return res.status(401).json({ error: 'token invalid' })
+      return res.status(401).json({ error: 'Token is either invalid or expired. Please log in again.' })
     }
   } else {
-    return res.status(401).json({ error: 'token missing' })
+    return res.status(401).json({ error: 'Token is missing. Please log in again.' })
   }
   next()
 }
@@ -110,7 +110,7 @@ const isAdmin = async (req, res, next) => {
     });
     
     if (!membership) {
-      return res.status(401).json({ error: 'unauthorized' });
+      return res.status(403).json({ error: 'You do not have permission to perform this action. Please contact your administrator.' });
     }
     
     logInfo('HOOORAAYYYY!! User is a club admin')
@@ -124,7 +124,7 @@ const isAdmin = async (req, res, next) => {
 const isSuperAdmin = async (req, res, next) => {
   const user = await User.findByPk(req.decodedToken.id)
   if(!user.isSuperadmin) {
-    return res.status(401).json({ error: 'unauthorized' })
+    return res.status(403).json({ error: 'You do not have permission to perform this action. Please contact your administrator.' })
   }
   next()
 }
