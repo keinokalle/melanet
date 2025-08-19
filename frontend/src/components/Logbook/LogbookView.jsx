@@ -2,8 +2,9 @@ import Paddle from './Paddle'
 import { useEffect, useState } from 'react'
 import PaddleForm from './PaddleForm'
 import paddlesService from '../../services/paddles'
-import clubsService from '../../services/clubs'
+import { Container, Row, Col, Button, Dropdown } from 'react-bootstrap'
 
+/**
 /**
  * Displays the full logbook page, including the list of paddling entries and the form to add new entries.
  * @component 
@@ -12,80 +13,26 @@ import clubsService from '../../services/clubs'
  * @returns {JSX.Element} The rendered logbook view.
  */
 
-function LogbookView({ clubId }) {
+function LogbookView({clubId, memberships, setClubChange}) {
   const [paddles, setPaddles] = useState([])
   const [showForm, setShowForm] = useState(false)
   const [modifyPaddle, setModifyPaddle] = useState(null)
-  const [clubName, setClubName] = useState('')
-
-  
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-  const [totalItems, setTotalItems] = useState(0)
-  const [itemsPerPage, setItemsPerPage] = useState(20)
-  const [showActive, setShowActive] = useState(true)
-  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (clubId) {
-      clubsService.getById(clubId)
-        .then(club => {
-          setClubName(club.name)
+    if (clubId) { // This check is already there, but let's make sure it's working
+      paddlesService.getByClubId(clubId)
+        .then(data => {
+          console.log('this is what we get', data)
+          setPaddles(data.paddles)
+          console.log("fetched paddles successfully")
         })
         .catch(err => {
-          console.error('Failed to fetch club:', err);
-          setClubName('Unknown Club')
+          console.error('Failed to fetch paddles:', err);
+          setPaddles([]);
         })
     }
   }, [clubId])
-
-  useEffect(() => {
-    fetchPaddles()
-  }, [clubId, currentPage, itemsPerPage, showActive])
-
-  const fetchPaddles = () => {
-    if (!clubId) return;
     
-    setLoading(true);
-    const queryParams = new URLSearchParams({
-      page: currentPage.toString(),
-      limit: itemsPerPage.toString(),
-      showActive: showActive.toString()
-    });
-
-    paddlesService.getByClubId(clubId, queryParams)
-      .then(data => {
-        console.log('this is what we get', data)
-        setPaddles(data.paddles)
-        setTotalPages(data.pagination.totalPages)
-        setTotalItems(data.pagination.totalItems)
-        console.log("fetched paddles successfully")
-      })
-      .catch(err => {
-        console.error('Failed to fetch paddles:', err);
-        setPaddles([]);
-      })
-      .finally(() => {
-        setLoading(false);
-      })
-  }
-
-  const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setCurrentPage(newPage);
-    }
-  }
-
-  const handleItemsPerPageChange = (newLimit) => {
-    setItemsPerPage(newLimit);
-    setCurrentPage(1); // Reset to first page when changing items per page
-  }
-
-  const handleShowActiveChange = (newShowActive) => {
-    setShowActive(newShowActive);
-    setCurrentPage(1); // Reset to first page when changing filter
-  }
 
   const handleSubmitPaddle = (paddleData) => {
     if (modifyPaddle) {
@@ -97,17 +44,17 @@ function LogbookView({ clubId }) {
         })
         .catch(err => {
           console.error('Failed to update paddle:', err);
+          // Optionally, show an error message to the user here
         })
     } else {
       // Create new paddle
       paddlesService.create(paddleData)
         .then(createdPaddle => {
           setPaddles(prev => [createdPaddle, ...prev]);
-          // Refresh the list to get updated pagination
-          fetchPaddles();
         })
         .catch(err => {
           console.error('Failed to create paddle:', err);
+          // Optionally, show an error message to the user here
         })
     }
   }
@@ -122,11 +69,12 @@ function LogbookView({ clubId }) {
     
     paddlesService.remove(paddleId)
       .then(() => {
-        // Refresh the list to get updated pagination
-        fetchPaddles();
+        const newPaddles = paddles.filter(p => p.id !== paddleId)
+        setPaddles(newPaddles);
       })
       .catch(err => {
         console.error('Failed to delete paddle:', err);
+        // Optionally, show an error message to the user here
       })
   }
 
@@ -136,92 +84,81 @@ function LogbookView({ clubId }) {
   }
 
   return (
-    <div>
-      {clubId && <h2>Logbook of Club {clubName}</h2>}
-      
-      {/* Controls Section */}
-      <div className="logbook-controls">
-        <div className="control-group">
-          <label>Show:</label>
-          <button 
-            className={showActive ? 'active' : ''} 
-            onClick={() => handleShowActiveChange(true)}
-          >
-            Active
-          </button>
-          <button 
-            className={!showActive ? 'active' : ''} 
-            onClick={() => handleShowActiveChange(false)}
-          >
-            All
-          </button>
-        </div>
+    <Container fluid>
+      {/* Header Section with Club Selector */}
+      <Row className="mb-4">
+        <Col>
+          {memberships && memberships.length > 1 ? (
+            <div className="d-flex align-items-center justify-content-between">
+              <h2 className="mb-0 me-3">Logbook</h2>
+              <Dropdown>
+                <Dropdown.Toggle variant="outline-primary" id="club-dropdown">
+                  {memberships.find(m => m.clubId === clubId) ? 
+                    memberships.find(m => m.clubId === clubId).clubName : 
+                    'Select Club'
+                  }
+                </Dropdown.Toggle>
+                <Dropdown.Menu>
+                  {memberships.map((membership) => (
+                    <Dropdown.Item 
+                      key={membership.clubId}
+                      onClick={() => setClubChange(membership.clubId)}
+                      active={membership.clubId === clubId}
+                    >
+                      {membership.clubName}
+                    </Dropdown.Item>
+                  ))}
+                </Dropdown.Menu>
+              </Dropdown>
+            </div>
+          ) : (
+            <h2>Logbook for {memberships[clubId].clubName}</h2>
+          )}
+        </Col>
+      </Row>
 
-        <div className="control-group">
-          <label>Items per page:</label>
-          <select 
-            value={itemsPerPage} 
-            onChange={(e) => handleItemsPerPageChange(parseInt(e.target.value))}
+      {/* Action Button */}
+      <Row className="mb-3">
+        <Col>
+          <Button 
+            variant="primary" 
+            onClick={() => setShowForm(s => !s)}
+            size="lg"
           >
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-          </select>
-        </div>
-      </div>
+            {showForm ? 'Cancel' : 'New Paddle'}
+          </Button>
+        </Col>
+      </Row>
 
-      <button onClick={() => setShowForm(s => !s)}>
-        {showForm ? 'Cancel' : 'New Paddle'}
-      </button>
-      
+      {/* Form Section */}
       {(showForm || modifyPaddle) && (
-        <PaddleForm 
-          onSubmit={handleSubmitPaddle} 
-          onCancel={handleCancelForm} 
-          clubId={clubId}
-          paddle={modifyPaddle}
-          isModify={!!modifyPaddle}
-        />
+        <Row className="mb-4">
+          <Col>
+            <PaddleForm 
+              onSubmit={handleSubmitPaddle} 
+              onCancel={handleCancelForm} 
+              clubId={clubId}
+              paddle={modifyPaddle}
+              isModify={!!modifyPaddle}
+            />
+          </Col>
+        </Row>
       )}
 
-      {loading && <div>Loading paddles...</div>}
-
-      <div className="paddleList">
-        {paddles
-          .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
-          .map((paddle, idx) => (
-            <Paddle key={idx} paddle={paddle} onDelete={handleDeletePaddle} onModify={handleModifyPaddle}/> 
-          ))}
-      </div>
-
-      {/* Pagination Controls */}
-      <div className="pagination-controls">
-        <div className="pagination-info">
-          Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} paddles
-        </div>
-        
-        <div className="pagination-buttons">
-          <button 
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage <= 1}
-          >
-            Previous
-          </button>
-          
-          <span className="page-info">
-            Page {currentPage} of {totalPages}
-          </span>
-          
-          <button 
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage >= totalPages}
-          >
-            Next
-          </button>
-        </div>
-      </div>
-    </div>
+      {/* Paddles List */}
+      <Row>
+        <Col>
+          <div className="paddleList">
+            {paddles
+              .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
+              .map((paddle, idx) => (
+                <Paddle key={idx} paddle={paddle} onDelete={handleDeletePaddle} onModify={handleModifyPaddle}/> 
+              ))}
+          </div>
+        </Col>
+      </Row>
+    </Container>
   )
 }
 
-export default LogbookView;
+export default LogbookView; 

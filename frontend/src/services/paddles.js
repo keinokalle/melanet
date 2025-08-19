@@ -10,15 +10,10 @@ const getAll = async () => {
   return response.data;
 };
 
-const getByClubId = async (clubId, queryParams = null) => {
-  let url = `${baseUrl}/club/${clubId}`;
-  if (queryParams) {
-    url += `?${queryParams.toString()}`;
-  }
-  
-  const response = await axios.get(url, getConfig());
-  console.log("got these paddles", response.data);
-  
+const getByClubId = async (clubId) => {
+  console.log("getting paddles by club id", clubId)
+  console.log("config", getConfig())
+  const response = await axios.get(`${baseUrl}/club/${clubId}`, getConfig());
   return response.data;
 }
 

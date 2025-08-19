@@ -1,9 +1,10 @@
 import './App.css'
 import { useState, useEffect } from 'react'
 import LogbookView from './components/Logbook/LogbookView'
-import Menu from './components/Menu'
+import Header from './components/Header'
 import LoginView from './components/Login/loginView'
 import membershipsService from './services/memberships'
+import { Container, Row, Col, Button } from 'react-bootstrap'
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -22,12 +23,28 @@ function App() {
     }
   }, [])
 
+  // Sets up the default club when memberships are set to userMemberships
+  useEffect(() => {
+    if (userMemberships.length > 0 && !currentClub) {
+      console.log("about to set the default club");
+      setCurrentClub(userMemberships[0].clubId);
+    }
+  }, [userMemberships, currentClub]);
+
   const fetchUserMemberships = async (userId) => {
     try {
       setLoading(true)
       const memberships = await membershipsService.getByUserId(userId)
-      console.log(memberships)
-      setUserMemberships(memberships)
+      console.log(memberships);
+      
+      // Map the memberships to include both clubId and clubName
+      const mappedMemberships = memberships.map(m => ({
+        clubId: m.clubId,
+        clubName: m.club.name
+      }));
+      console.log('Kuulun näihin', mappedMemberships);
+      
+      setUserMemberships(mappedMemberships);
     } catch (error) {
       console.error('Error fetching memberships:', error)
     } finally {
@@ -39,8 +56,10 @@ function App() {
     setIsLoggedIn(true)
     setCurrentSection('login') // Stay on login view to show user info
     if (userData.id) {
+      console.log("fetching");
       fetchUserMemberships(userData.id)
     }
+
   }
 
   const handleLogout = () => {
@@ -55,8 +74,7 @@ function App() {
     setCurrentSection('login')
   }
 
-  const handleNavigate = (clubId, section) => {
-    setCurrentClub(clubId)
+  const handleNavigate = (section) => {
     setCurrentSection(section)
   }
 
@@ -67,24 +85,21 @@ function App() {
 
     // Show login form when on login section (for re-login if needed)
     if (currentSection === 'login') {
-      return (
-        <div>
-          <h2>User Dashboard</h2>
-          <p>Select a club and section from the menu to get started.</p>
-        </div>
-      )
+      setCurrentSection('frontPage')
     }
 
     // Render club-specific sections
     switch (currentSection) {
+      case 'frontPage':
+        return <div>Welcome to Melanet! Select a section from the menu to get started.</div>
       case 'logbook':
-        return <LogbookView clubId={currentClub} />
+        return <LogbookView clubId={currentClub} memberships={userMemberships} setClubChange={setCurrentClub}/>
       case 'reservationCalendar':
-        return <div>Reservation Calendar for Club {currentClub}</div>
+        return <div>Reservation Calendar for {userMemberships.find(m => m.clubId === currentClub)?.clubName || `Club ${currentClub}`}</div>
       case 'equipment':
-        return <div>Equipment for Club {currentClub}</div>
+        return <div>Equipment for {userMemberships.find(m => m.clubId === currentClub)?.clubName || `Club ${currentClub}`}</div>
       case 'statistics':
-        return <div>Statistics for Club {currentClub}</div>
+        return <div>Statistics for {userMemberships.find(m => m.clubId === currentClub)?.clubName || `Club ${currentClub}`}</div>
       default:
         return <div>Select a section from the menu</div>
     }
@@ -92,35 +107,23 @@ function App() {
 
   return (
     <div className="melanetContainer">
-      <div className="header">
-        <h1>Melanet</h1>
-        <div className="auth-buttons">
-          {isLoggedIn ? (
-            <>
-              <span className="user-info">
-                Welcome, {localStorage.getItem('name') || localStorage.getItem('username')}!
-              </span>
-              <button onClick={handleLogout}>Logout</button>
-            </>
-          ) : (
-            <span>Please log in</span>
-          )}
-        </div>
-      </div>
-      <div className="main-content">
-        <div className="menu-section">
-          <Menu 
-            isLoggedIn={isLoggedIn}
-            userMemberships={userMemberships}
-            onNavigate={handleNavigate}
-            loading={loading}
-          />
-        </div>
-        <div className="content-section">
-          {renderContent()}
-        </div>
-      </div>
-      <img src="/image.png" alt="Melanet logo" className="melanet-image" />
+      <Header 
+        isLoggedIn={isLoggedIn}
+        onLogout={handleLogout}
+        userMemberships={userMemberships}
+        onNavigate={handleNavigate}
+        loading={loading}
+      />
+    
+      <Container className="main-content mx-auto px-3 px-md-4 px-lg-5">
+        <Row>
+          <Col>
+            <div className="content-section">
+              {renderContent()}
+            </div>
+          </Col>
+        </Row>
+      </Container>
     </div>
   )
 }
