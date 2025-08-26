@@ -244,7 +244,12 @@ function LogbookView({clubId, memberships, setClubChange}) {
               </Dropdown>
             </div>
           ) : (
-            <h2>Logbook for {memberships.find(m => m.clubId === clubId)?.clubName || 'Unknown Club'}</h2>
+            <div className="d-flex align-items-center justify-content-between">
+              <h2 className="mb-0">Logbook</h2>
+              <span className="text-muted fst-italic" style={{ fontSize: '1.1rem' }}>
+                {memberships.find(m => m.clubId === clubId)?.clubName || 'Unknown Club'}
+              </span>
+            </div>
           )}
         </Col>
       </Row>

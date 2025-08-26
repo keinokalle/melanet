@@ -27,6 +27,7 @@ const getPaddleQueryConfig = () => ({
 const canEditPaddle = async (req, res, next) => {
   
   try {
+    const userId = req.decodedToken.id;
     console.log('Looking for paddle with ID:', req.params.id);
     const paddle = await Paddle.findByPk(req.params.id);
     

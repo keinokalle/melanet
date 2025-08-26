@@ -120,7 +120,7 @@ function Reservation({ reservation, onDelete, onModify }) {
         <div className="mb-3">
           <div className="d-flex justify-content-start" style={{ gap: '20px' }}>
             <div>
-              <div style={{ fontSize: '0.7rem', color: 'var(--color-text)', fontWeight: '450' }}>{equipment?.type ? equipment.type.charAt(0).toUpperCase() + equipment.type.slice(1) : 'Unknown Type'}</div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--color-text)', fontWeight: '450' }}>Equipment</div>
               <div style={{ fontWeight: 'bold', fontSize: '0.8rem' }}>
                 {equipment?.name || 'Unknown Equipment'}
               </div>

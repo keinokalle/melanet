@@ -196,7 +196,12 @@ function ReservationView({clubId, memberships, setClubChange}) {
               </Dropdown>
             </div>
           ) : (
-            <h2>Reservations for {memberships.find(m => m.clubId === clubId)?.clubName || 'Unknown Club'}</h2>
+            <div className="d-flex align-items-center justify-content-between">
+              <h2 className="mb-0">Reservations</h2>
+              <span className="text-muted fst-italic" style={{ fontSize: '1.1rem' }}>
+                {memberships.find(m => m.clubId === clubId)?.clubName || 'Unknown Club'}
+              </span>
+            </div>
           )}
         </Col>
       </Row>
@@ -246,7 +251,7 @@ function ReservationView({clubId, memberships, setClubChange}) {
             <option value="">All Equipment</option>
             {equipment.map(item => (
               <option key={item.id} value={item.id}>
-                {item.type.charAt(0).toUpperCase() + item.type.slice(1)}: {item.name}
+                {item.name}
               </option>
             ))}
           </Form.Select>

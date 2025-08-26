@@ -15,7 +15,7 @@ const getReservationQueryConfig = () => ({
     },
     {
       model: Equipment,
-      attributes: ['name', 'type', 'clubId'],
+      attributes: ['name', 'clubId'],
       as: 'equipment'
     }
   ],
@@ -85,7 +85,7 @@ router.get('/:id', tokenExtractor, async (req, res) => {
 // Get reservations by club ID with filtering
 router.get('/club/:clubId', tokenExtractor, isMember, async (req, res) => {
   const { clubId } = req.params
-  const { page = 1, limit = 20, userId = null, showActive = null } = req.query
+  const { page = 1, limit = 20, userId = null, showActive = null, equipmentId = null } = req.query
   const currentUserId = parseInt(req.decodedToken.id)
   
   try {
@@ -97,6 +97,11 @@ router.get('/club/:clubId', tokenExtractor, isMember, async (req, res) => {
     // Filter by user if specified
     if (userId) {
       whereClause.userId = parseInt(userId)
+    }
+    
+    // Filter by equipment if specified
+    if (equipmentId) {
+      whereClause.equipmentId = parseInt(equipmentId)
     }
     
     // Filter by active status if specified
@@ -115,6 +120,17 @@ router.get('/club/:clubId', tokenExtractor, isMember, async (req, res) => {
       }
     }
     
+    // Determine ordering based on filter type
+    let orderBy = [['startTime', 'ASC']] // Default for Future filter
+    
+    if (userId) {
+      // My filter - show most recent first (DESC)
+      orderBy = [['startTime', 'DESC']]
+    } else if (showActive === 'true') {
+      // Future filter - show closest first (ASC)
+      orderBy = [['startTime', 'ASC']]
+    }
+    
     const reservations = await Reservation.findAndCountAll({
       where: {
         ...whereClause,
@@ -128,11 +144,11 @@ router.get('/club/:clubId', tokenExtractor, isMember, async (req, res) => {
         },
         {
           model: Equipment,
-          attributes: ['name', 'type', 'clubId'],
+          attributes: ['name', 'clubId'],
           as: 'equipment'
         }
       ],
-      order: [['startTime', 'DESC']],
+      order: orderBy,
       limit: parseInt(limit),
       offset: offset
     })
