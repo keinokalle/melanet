@@ -10,8 +10,9 @@ import ArrowIcon from '../../assets/Arrow.svg';
 function Paddle({ paddle, onDelete, onModify }) {
   const [isExpanded, setIsExpanded] = useState(false);
   
+  console.log(paddle)
   // Destructure all the properties from the paddle object
-  const { id, startTime, endTime, equipment, user, info, canEdit, clubId, equipmentId } = paddle;
+  const { id, startTime, endTime, equipment, user, info, canEdit, clubId, equipmentId, length, additionalInfo } = paddle
 
   // Format the date for subtitle
   const formatDate = (dateTimeString) => {
@@ -50,15 +51,26 @@ function Paddle({ paddle, onDelete, onModify }) {
     return `${diffMinutes}m`;
   };
 
-  const calculateStatus = () => {
-    const now = new Date();
-    const start = startTime ? new Date(startTime) : null;
-    const end = endTime ? new Date(endTime) : null;
+  const calculatePace = () => {
+    if (!length || !startTime || !endTime) return 'N/A';
+    
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    const diffMs = end - start;
+    const diffMinutes = diffMs / (1000 * 60);
+    
+    if (diffMinutes <= 0 || length <= 0) return 'N/A';
+    
+    const paceMinutesPerKm = diffMinutes / length;
+    const paceMinutes = Math.floor(paceMinutesPerKm);
+    const paceSeconds = Math.round((paceMinutesPerKm - paceMinutes) * 60);
+    
+    return `${paceMinutes}:${paceSeconds.toString().padStart(2, '0')} /km`;
+  };
 
-    if (!start) return 'Planned';
-    if (start > now) return 'Scheduled';
-    if (!end || end > now) return 'In Progress';
-    return 'Completed';
+  const calculateStatus = () => {
+    // Simple: if endTime exists, it's completed, otherwise it's in progress
+    return endTime ? 'Completed' : 'In Progress';
   };
 
 
@@ -67,14 +79,7 @@ function Paddle({ paddle, onDelete, onModify }) {
 
   // Determine background color based on status
   const getBackgroundColor = () => {
-    switch (status) {
-      case 'Completed':
-        return '#fff';
-      case 'In Progress':
-        return 'var(--color-primary)';
-      default:
-        return 'var(--color-secondary)'; // Default white for other statuses
-    }
+    return status === 'In Progress' ? 'var(--color-primary)' : '#fff';
   };
 
   const handleCardClick = () => {
@@ -126,27 +131,67 @@ function Paddle({ paddle, onDelete, onModify }) {
                 {formatDate(startTime)} • {formatStartTime(startTime)}
               </span>
             </small>
-            {status === 'In Progress' && <span className="blinking-dot"></span>}
           </Card.Subtitle>
         
         {/* Card.Title with info */}
-        <Card.Title className="mb-3">
-          {info || 'No additional information'}
-        </Card.Title>
+        <div className="mb-3">
+          <div style={{ fontSize: '0.95rem', color: 'var(--color-text' }}>
+            {info || 'No additional information'}
+          </div>
+        </div>
         
         {/* Equipment and total time information */}
-        <div className="mb-3">
-          <Row>
-            <Col>
-              <strong>{`${equipment.type}`}:</strong> {`${equipment.name}`}
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              <strong>Time:</strong> {calculateTotalTime()}
-            </Col>
-          </Row>
-        </div>
+        {status === 'Completed' ? (
+          // Grid layout for completed paddles
+          <div className="mb-3">
+            <div className="d-flex justify-content-start" style={{ gap: '20px' }}>
+              <div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--color-text', fontWeight: '450' }}>Length</div>
+                <div style={{ fontWeight: 'bold', fontSize: '0.8rem' }}>{length ? `${length} km` : 'N/A'}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--color-text', fontWeight: '450' }}>Time</div>
+                <div style={{ fontWeight: 'bold', fontSize: '0.8rem' }}>{calculateTotalTime()}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--color-text', fontWeight: '450' }}>Pace</div>
+                <div style={{ fontWeight: 'bold', fontSize: '0.8rem' }}>{calculatePace()}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--color-text', fontWeight: '450' }}>{equipment.type.charAt(0).toUpperCase() + equipment.type.slice(1)}</div>
+                <div style={{ fontWeight: 'bold', fontSize: '0.8rem' }}>{equipment.name}</div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          // Flexbox layout for in-progress paddles (same structure as completed)
+          <div className="mb-3">
+            <div className="d-flex justify-content-start" style={{ gap: '20px' }}>
+              <div>
+                <div style={{ fontWeight: 'bold', fontSize: '0.8rem', color: '#dc3545' }}>
+                  <span className="blinking-dot"></span> Active
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--color-text', fontWeight: '450' }}>Started</div>
+                <div style={{ fontWeight: 'bold', fontSize: '0.8rem' }}>{formatStartTime(startTime)}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--color-text', fontWeight: '450' }}>{equipment.type.charAt(0).toUpperCase() + equipment.type.slice(1)}</div>
+                <div style={{ fontWeight: 'bold', fontSize: '0.8rem' }}>{equipment.name}</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Additional Information - shown if it exists */}
+        {additionalInfo && (
+          <div className="mb-3">
+            <div style={{ fontSize: '0.8rem', color: '#6c757d', fontStyle: 'italic' }}>
+              <strong>Paddler's comment:</strong> {additionalInfo}
+            </div>
+          </div>
+        )}
 
         {/* Chevron indicator in bottom right */}
         {canEdit && (
@@ -182,7 +227,7 @@ function Paddle({ paddle, onDelete, onModify }) {
                   onClick={(e) => {
                     e.stopPropagation();
                     console.log('Modify button clicked with paddle data:', {id, startTime, endTime, equipment, user, info, clubId, equipmentId});
-                    onModify({id, startTime, endTime, equipment, user, info, clubId, equipmentId});
+                    onModify({id, startTime, endTime, equipment, user, info, clubId, equipmentId, length, additionalInfo});
                   }}
                 >
                   Modify

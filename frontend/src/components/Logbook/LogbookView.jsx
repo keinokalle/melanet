@@ -20,6 +20,7 @@ function LogbookView({clubId, memberships, setClubChange}) {
   const [modifyPaddle, setModifyPaddle] = useState(null)
   const [toasts, setToasts] = useState([])
   const [isLoading, setIsLoading] = useState(false)
+  const [activeFilter, setActiveFilter] = useState('My') // Track which filter is selected
 
   // Helper function to add toasts
   const addToast = (toast) => {
@@ -56,23 +57,46 @@ function LogbookView({clubId, memberships, setClubChange}) {
 
   const { isPaddling, activePaddle, hasMultipleActive } = getPaddlingStatus()
 
+  // Handle filter button clicks
+  const handleFilterClick = (filterType) => {
+    setActiveFilter(filterType)
+  }
+
   useEffect(() => {
     if (clubId) {
-      setIsLoading(true)
-      paddlesService.getByClubId(clubId)
-        .then(data => {
-          setPaddles(data.paddles)
-        })
-        .catch(err => {
-          const { errorMessage, errorTitle } = handleApiError(err, 'paddles')
-          addToast(createToast(errorMessage, errorTitle))
-          setPaddles([])
-        })
-        .finally(() => {
-          setIsLoading(false)
-        })
+      // Function to fetch paddles based on active filter
+      const fetchPaddles = () => {
+        setIsLoading(true)
+        
+        // Build query parameters based on active filter
+        let queryParams = {}
+        
+        if (activeFilter === 'My') {
+          queryParams.userId = localStorage.getItem('userId')
+        } else if (activeFilter === 'Active') {
+          queryParams.showActive = 'true'
+        } else if (activeFilter === 'All') {
+          // No additional filters needed - show all
+        }
+        
+        paddlesService.getByClubId(clubId, queryParams)
+          .then(data => {
+            setPaddles(data.paddles)
+            console.log("Paddles with filter:", activeFilter, data.paddles)
+          })
+          .catch(err => {
+            const { errorMessage, errorTitle } = handleApiError(err, 'paddles')
+            addToast(createToast(errorMessage, errorTitle))
+            setPaddles([])
+          })
+          .finally(() => {
+            setIsLoading(false)
+          })
+      }
+      
+      fetchPaddles()
     }
-  }, [clubId])
+  }, [clubId, activeFilter])
     
 
   const handleSubmitPaddle = (paddleData) => {
@@ -100,6 +124,8 @@ function LogbookView({clubId, memberships, setClubChange}) {
         .then(updatedPaddle => {
           setPaddles(prev => prev.map(p => p.id === activePaddle.id ? updatedPaddle : p))
           addToast(createToast('Paddle ended successfully!', 'Success', 'success'))
+          // Clear modifyPaddle state so next "New Paddle" gives fresh form
+          setModifyPaddle(null)
         })
         .catch(err => {
           const { errorMessage, errorTitle } = handleApiError(err, 'ending paddle')
@@ -107,7 +133,7 @@ function LogbookView({clubId, memberships, setClubChange}) {
         })
         .finally(() => {
           setIsLoading(false)
-        })
+        })    
     } else {
       // Create new paddle
       paddlesService.create(paddleData)
@@ -223,24 +249,50 @@ function LogbookView({clubId, memberships, setClubChange}) {
         </Col>
       </Row>
 
-      {/* Action Button */}
+      {/* Action Buttons and Filters */}
       <Row className="mb-3">
         <Col>
-          <Button 
-            variant={isPaddling ? "warning" : "primary"}
-            onClick={handleMainButtonClick}
-            size="lg"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Loading...' : (
-              isPaddling ? 'End Paddle' : 'New Paddle'
-            )}
-          </Button>
-          {hasMultipleActive && (
-            <small className="text-warning d-block mt-1">
-              ⚠️ Multiple active paddles detected
-            </small>
-          )}
+          <div className="d-flex justify-content-between align-items-center">
+            {/* Filter Button Group */}
+            <div className="btn-group" role="group" aria-label="Paddle filters">
+              <Button 
+                variant={activeFilter === 'My' ? 'primary' : 'outline-secondary'}
+                onClick={() => handleFilterClick('My')}
+              >
+                My
+              </Button>
+              <Button 
+                variant={activeFilter === 'Active' ? 'primary' : 'outline-secondary'}
+                onClick={() => handleFilterClick('Active')}
+              >
+                Active
+              </Button>
+              <Button 
+                variant={activeFilter === 'All' ? 'primary' : 'outline-secondary'}
+                onClick={() => handleFilterClick('All')}
+              >
+                All
+              </Button>
+            </div>
+            
+            {/* New Paddle Button */}
+            <div className="text-end">
+              <Button 
+                variant={isPaddling ? "warning" : "primary"}
+                onClick={handleMainButtonClick}
+                disabled={isLoading}
+              >
+                {isLoading ? 'Loading...' : (
+                  isPaddling ? 'End Paddle' : 'New Paddle'
+                )}
+              </Button>
+              {hasMultipleActive && (
+                <small className="text-warning d-block mt-1">
+                  ⚠️ Multiple active paddles detected
+                </small>
+              )}
+            </div>
+          </div>
         </Col>
       </Row>
 
@@ -256,7 +308,7 @@ function LogbookView({clubId, memberships, setClubChange}) {
 
       {/* Paddles List */}
       <Row>
-        <Col>
+        <Col className="px-0 px-sm-3 px-md-4">
           <div className="paddleList">
             {isLoading ? (
               <div className="text-center py-4">

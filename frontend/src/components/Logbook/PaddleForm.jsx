@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Modal, Button, Form, Row, Col } from 'react-bootstrap'
 import equipmentsService from '../../services/equipments'
 
@@ -61,17 +61,34 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
     equipmentId: ''
   });
 
+  const fetchEquipment = useCallback(async () => {
+    try {
+      setLoadingEquipment(true);
+      const data = await equipmentsService.getByClubId(clubId);
+      setEquipment(data.equipment || data); // Handle different response formats
+    } catch (error) {
+      console.error('Failed to fetch equipment:', error);
+      setEquipment([]);
+    } finally {
+      setLoadingEquipment(false);
+    }
+  }, [clubId])
+
   // Fetch equipment when modal opens or clubId changes
   useEffect(() => {
     if (show && clubId) {
-      fetchEquipment();
+      fetchEquipment()
     }
-  }, [show, clubId]);
+  }, [show, clubId, fetchEquipment])
 
   // Initialize form data when paddle is provided (modify mode)
   useEffect(() => {
     console.log('PaddleForm useEffect - paddle:', paddle, 'isModify:', isModify);
     if (paddle && isModify) {
+
+      console.log('Paddle length value:', paddle.length, 'Type:', typeof paddle.length);
+      console.log('Paddle visitors value:', paddle.visitors, 'Type:', typeof paddle.visitors);
+      console.log('What paddle is here??', paddle)
       const formDataToSet = {
         startTime: formatDateTimeForInput(paddle.startTime),
         endTime: formatDateTimeForInput(paddle.endTime),
@@ -87,19 +104,6 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
       setFormData(formDataToSet);
     }
   }, [paddle, isModify, clubId]);
-
-  const fetchEquipment = async () => {
-    try {
-      setLoadingEquipment(true);
-      const data = await equipmentsService.getByClubId(clubId);
-      setEquipment(data.equipment || data); // Handle different response formats
-    } catch (error) {
-      console.error('Failed to fetch equipment:', error);
-      setEquipment([]);
-    } finally {
-      setLoadingEquipment(false);
-    }
-  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

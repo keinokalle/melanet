@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import LogbookView from './components/Logbook/LogbookView'
 import Header from './components/Header'
 import LoginView from './components/Login/loginView'
+import ReservationView from './components/Reservations/ReservationView'
 import membershipsService from './services/memberships'
 import { Container, Row, Col, Button } from 'react-bootstrap'
 
@@ -95,7 +96,7 @@ function App() {
       case 'logbook':
         return <LogbookView clubId={currentClub} memberships={userMemberships} setClubChange={setCurrentClub}/>
       case 'reservationCalendar':
-        return <div>Reservation Calendar for {userMemberships.find(m => m.clubId === currentClub)?.clubName || `Club ${currentClub}`}</div>
+        return <ReservationView clubId={currentClub} memberships={userMemberships} setClubChange={setCurrentClub}/>
       case 'equipment':
         return <div>Equipment for {userMemberships.find(m => m.clubId === currentClub)?.clubName || `Club ${currentClub}`}</div>
       case 'statistics':

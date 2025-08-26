@@ -1,0 +1,10 @@
+POST http://localhost:3001/api/reservations
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IktpbWkiLCJpZCI6MTksImlhdCI6MTc1NTc3NjM4MSwiZXhwIjoxNzU1ODYyNzgxfQ.6h8ZiK_CFG1HekG4QF7E2NS0AgZvM0uHWDWp-cQ8H_E
+
+{
+  "startTime": "2025-08-21T10:00:00Z",
+  "endTime": "2025-08-21T11:00:00Z",
+  "equipmentId": 8,
+  "clubId": 1
+}

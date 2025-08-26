@@ -3,7 +3,7 @@ const app = express()
 
 const { PORT } = require('./util/config')
 const { connectToDatabase } = require('./util/db')
-const { usersRouter, loginRouter, clubsRouter, equipmentsRouter, membershipsRouter, paddlesRouter } = require('./controllers')
+const { usersRouter, loginRouter, clubsRouter, equipmentsRouter, membershipsRouter, paddlesRouter, reservationsRouter } = require('./controllers')
 const { unknownEndpoint, errorHandler } = require('./util/middlevare')
 const { info: logInfo } = require('./util/logger')
 
@@ -15,6 +15,7 @@ app.use('/api/clubs', clubsRouter)
 app.use('/api/equipments', equipmentsRouter)
 app.use('/api/memberships', membershipsRouter)
 app.use('/api/paddles', paddlesRouter)
+app.use('/api/reservations', reservationsRouter)
 
 app.use(unknownEndpoint)
 app.use(errorHandler)

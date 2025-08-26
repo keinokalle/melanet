@@ -98,7 +98,7 @@ function Header({ isLoggedIn, onLogout, userMemberships, onNavigate, loading }) 
                 className="w-100 mb-2 text-start"
                 onClick={() => handleNavigate('reservationCalendar')}
               >
-                Reservation Calendar
+                Reservations
               </Button>
               <Button 
                 variant="outline-secondary" 

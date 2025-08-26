@@ -4,6 +4,7 @@ const clubsRouter = require('./clubs')
 const equipmentsRouter = require('./equipments')
 const membershipsRouter = require('./memberships')
 const paddlesRouter = require('./paddles')
+const reservationsRouter = require('./reservations')
 
 module.exports = {
   usersRouter,
@@ -11,5 +12,6 @@ module.exports = {
   clubsRouter,
   equipmentsRouter,
   membershipsRouter,
-  paddlesRouter
+  paddlesRouter,
+  reservationsRouter
 } 

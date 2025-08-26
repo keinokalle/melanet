@@ -3,6 +3,7 @@ const Club = require('./club')
 const Equipment = require('./equipment')
 const Membership = require('./membership')
 const Paddle = require('./paddle')
+const Reservation = require('./reservation')
 /*
 * This file is mainly used for exporting the models all at once
 * instead of importing them one by one.
@@ -19,6 +20,9 @@ Membership.belongsTo(Club)
 User.belongsToMany(Club, { through: Membership })
 Club.belongsToMany(User, { through: Membership })
 
+Reservation.belongsTo(User)
+Reservation.belongsTo(Equipment)
+Reservation.belongsTo(Club)
 
 
 module.exports = {
@@ -26,5 +30,6 @@ module.exports = {
   Club,
   Equipment,
   Membership,
-  Paddle
+  Paddle,
+  Reservation
 }

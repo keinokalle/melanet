@@ -6,19 +6,24 @@ const getConfig = () => ({
 })
 
 const getAll = async () => {
-  const response = await axios.get(baseUrl);
+  const response = await axios.get(baseUrl, getConfig());
   return response.data;
 };
 
-const getByClubId = async (clubId) => {
-  console.log("getting paddles by club id", clubId)
+const getByClubId = async (clubId, queryParams = {}) => {
+  console.log("getting paddles by club id", clubId, "with params:", queryParams)
   console.log("config", getConfig())
-  const response = await axios.get(`${baseUrl}/club/${clubId}`, getConfig());
+  
+  // Build query string from params
+  const queryString = new URLSearchParams(queryParams).toString()
+  const url = queryString ? `${baseUrl}/club/${clubId}?${queryString}` : `${baseUrl}/club/${clubId}`
+  
+  const response = await axios.get(url, getConfig());
   return response.data;
 }
 
 const getById = async (id) => {
-  const response = await axios.get(`${baseUrl}/${id}`);
+  const response = await axios.get(`${baseUrl}/${id}`, getConfig());
   return response.data;
 };
 
