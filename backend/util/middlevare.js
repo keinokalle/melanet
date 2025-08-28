@@ -16,6 +16,7 @@ const unknownEndpoint = (req, res) => {
 }
 
 const errorHandler = (err, req, res, next) => {
+  console.log("Error occurred:", err.name, err.message)
   logError('Error occurred:', err.name)
   if (err.name === 'SequelizeUniqueConstraintError') {
     return res.status(400).json({error: 'the value must be unique'})

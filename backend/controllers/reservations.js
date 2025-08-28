@@ -85,7 +85,7 @@ router.get('/:id', tokenExtractor, async (req, res) => {
 // Get reservations by club ID with filtering
 router.get('/club/:clubId', tokenExtractor, isMember, async (req, res) => {
   const { clubId } = req.params
-  const { page = 1, limit = 20, userId = null, showActive = null, equipmentId = null } = req.query
+  const { page = 1, limit = 20, userId = null, showActive = null, equipmentId = null, date = null } = req.query
   const currentUserId = parseInt(req.decodedToken.id)
   
   try {
@@ -108,15 +108,33 @@ router.get('/club/:clubId', tokenExtractor, isMember, async (req, res) => {
     if (showActive === 'true') {
       whereClause = {
         ...whereClause,
-        [Op.or]: [
-          { endTime: null },
-          { endTime: { [Op.gt]: new Date() } }
-        ]
+        endTime: { [Op.gt]: new Date() } // End time is in the future
       }
     } else if (showActive === 'false') {
       whereClause = {
         ...whereClause,
-        endTime: { [Op.not]: null }
+        endTime: { [Op.lte]: new Date() } // End time is in the past or now
+      }
+    }
+
+    // Filter by specific date if specified
+    if (date) {
+      const startOfDay = new Date(date);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(date);
+      endOfDay.setHours(23, 59, 59, 999);
+      
+      whereClause = {
+        ...whereClause,
+        startTime: {
+          [Op.between]: [startOfDay, endOfDay]
+        }
+      };
+      
+      // Also filter out reservations that have already ended
+      whereClause = {
+        ...whereClause,
+        endTime: { [Op.gt]: new Date() } // End time is in the future
       }
     }
     
@@ -175,17 +193,44 @@ router.post('/', tokenExtractor, async (req, res) => {
     const userId = parseInt(req.decodedToken.id)
     
     // Validate required fields
-    if (!startTime || !equipmentId || !clubId) {
+    if (!startTime || !endTime || !equipmentId || !clubId) {
       return res.status(400).json({ 
-        error: 'startTime, equipmentId, and clubId are required' 
+        error: 'startTime, endTime, equipmentId, and clubId are required' 
       })
     }
     
-    // Validate that endTime is after startTime if provided
-    if (endTime && new Date(endTime) <= new Date(startTime)) {
+    // Validate that endTime is after startTime
+    if (new Date(endTime) <= new Date(startTime)) {
       return res.status(400).json({ 
         error: 'endTime must be after startTime' 
       })
+    }
+
+    // In your reservation creation endpoint
+    const overlappingReservations = await Reservation.findAll({
+      where: {
+        equipmentId: equipmentId,
+        clubId: clubId,
+        [Op.or]: [
+          // New reservation starts during existing reservation
+          {
+            startTime: { [Op.lt]: endTime },
+            endTime: { [Op.gt]: startTime }
+          },
+          // New reservation ends during existing reservation
+          {
+            startTime: { [Op.lt]: endTime },
+            endTime: { [Op.gt]: startTime }
+          }
+        ]
+      }
+    });
+
+    if (overlappingReservations.length > 0) {
+      return res.status(400).json({
+        error: 'Reservation overlaps with existing reservations',
+        overlaps: overlappingReservations
+      });
     }
     
     const reservation = new Reservation({

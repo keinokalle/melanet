@@ -143,12 +143,14 @@ router.get('/club/:clubId', tokenExtractor, isMember, async (req, res) => {
 // Maybe later users have to be able to create paddles for other users
 // For now, only the user who is creating the paddle can "own" the paddle
 router.post('/', tokenExtractor, async (req, res) => {
+  logInfo("Creating paddle", req.body)
   const { startTime, endTime, info, clubId, equipmentId, length, visitors, additionalInfo } = req.body
   const userId = req.decodedToken.id // This is the user who is creating the paddle
   if (!clubId || !equipmentId) {
     return res.status(400).json({ error: 'clubId and equipmentId are required' })
   }
   try {
+    logInfo("Here")
     const paddle = await Paddle.create({ 
       startTime, 
       endTime, 
@@ -160,6 +162,7 @@ router.post('/', tokenExtractor, async (req, res) => {
       visitors,
       additionalInfo
     })
+    logInfo("Not here")
     const paddleWithEquipment = await Paddle.findByPk(paddle.id, getPaddleQueryConfig())
 
     const paddleWithPermissions = await addPaddlePermissions(paddleWithEquipment.toJSON(), userId);
@@ -167,7 +170,7 @@ router.post('/', tokenExtractor, async (req, res) => {
     res.status(201).json(paddleWithPermissions);
 
   } catch (error) {
-    res.status(400).json({ error: error.message })
+    next(error)
   }
 })
 

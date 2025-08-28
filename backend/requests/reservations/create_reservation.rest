@@ -1,6 +1,6 @@
 POST http://localhost:3001/api/reservations
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IktpbWkiLCJpZCI6MTksImlhdCI6MTc1NTc3NjM4MSwiZXhwIjoxNzU1ODYyNzgxfQ.6h8ZiK_CFG1HekG4QF7E2NS0AgZvM0uHWDWp-cQ8H_E
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkthbGxlIiwiaWQiOjIwLCJpYXQiOjE3NTYzNjk3OTIsImV4cCI6MTc1NjQ1NjE5Mn0.P-p_3vXxqOwjFAjA-j7x7SGsai7SXLjFyGrCaPt45Xw
 
 {
   "startTime": "2025-08-21T10:00:00Z",

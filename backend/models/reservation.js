@@ -21,7 +21,7 @@ Reservation.init({
   },
   endTime: {
     type: DataTypes.DATE,
-    allowNull: true
+    allowNull: false
   },
   equipmentId: {
     type: DataTypes.INTEGER,
