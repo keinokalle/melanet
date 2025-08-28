@@ -4,6 +4,8 @@ import PaddleForm from './PaddleForm'
 import paddlesService from '../../services/paddles'
 import { Container, Row, Col, Button, Dropdown, Toast, ToastContainer } from 'react-bootstrap'
 import { handleApiError, createToast } from '../../util/errorHandler'
+import InfoModal from '../InfoModal'
+import InfoIcon from '../../assets/Info.svg'
 
 /**
 /**
@@ -21,6 +23,7 @@ function LogbookView({clubId, memberships, setClubChange}) {
   const [toasts, setToasts] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [activeFilter, setActiveFilter] = useState('My') // Track which filter is selected
+  const [showInfoModal, setShowInfoModal] = useState(false)
 
   // Helper function to add toasts
   const addToast = (toast) => {
@@ -222,7 +225,16 @@ function LogbookView({clubId, memberships, setClubChange}) {
         <Col>
           {memberships && memberships.length > 1 ? (
             <div className="d-flex align-items-center justify-content-between">
-              <h2 className="mb-0 me-3">Logbook</h2>
+              <div className="d-flex align-items-center">
+                <h2 className="mb-0 me-3">Logbook</h2>
+                <img 
+                  src={InfoIcon} 
+                  alt="Info" 
+                  style={{ width: 24, height: 24, cursor: 'pointer' }}
+                  onClick={() => setShowInfoModal(true)}
+                  title="Click for instructions"
+                />
+              </div>
               <Dropdown>
                 <Dropdown.Toggle variant="outline-primary" id="club-dropdown">
                   {memberships.find(m => m.clubId === clubId) ? 
@@ -245,7 +257,16 @@ function LogbookView({clubId, memberships, setClubChange}) {
             </div>
           ) : (
             <div className="d-flex align-items-center justify-content-between">
-              <h2 className="mb-0">Logbook</h2>
+              <div className="d-flex align-items-center">
+                <h2 className="mb-0 me-3">Logbook</h2>
+                <img 
+                  src={InfoIcon} 
+                  alt="Info" 
+                  style={{ width: 24, height: 24, cursor: 'pointer' }}
+                  onClick={() => setShowInfoModal(true)}
+                  title="Click for instructions"
+                />
+              </div>
               <span className="text-muted fst-italic" style={{ fontSize: '1.1rem' }}>
                 {memberships.find(m => m.clubId === clubId)?.clubName || 'Unknown Club'}
               </span>
@@ -335,6 +356,14 @@ function LogbookView({clubId, memberships, setClubChange}) {
           </div>
         </Col>
       </Row>
+
+      {/* Info Modal */}
+      <InfoModal
+        show={showInfoModal}
+        onHide={() => setShowInfoModal(false)}
+        title="Logbook Instructions"
+        content="<p>Welcome to the Logbook! Here you can:</p><ul><li>Track your paddling sessions</li><li>View your paddling history</li><li>Start and end paddling sessions</li><li>Filter paddles by different criteria</li></ul><p>Use the filters to view 'My' paddles, 'Active' paddles, or 'All' paddles in the club.</p>"
+      />
     </Container>
   )
 }
