@@ -18,8 +18,8 @@ import reservationsService from '../../services/reservations'
 function ReservationForm({ onSubmit, onCancel, clubId, reservation = null, isModify = false, show = false }) {
   const [equipment, setEquipment] = useState([])
   const [loadingEquipment, setLoadingEquipment] = useState(false)
-  const [nextReservation, setNextReservation] = useState(null)
-  const [loadingNextReservation, setLoadingNextReservation] = useState(false)
+  const [alertInfo, setAlertInfo] = useState(null)
+  const [loadingOverlapCheck, setLoadingOverlapCheck] = useState(false)
 
   // Calculate default start time (current time + 10 minutes) in Finland timezone
   const getDefaultStartTime = () => {
@@ -74,34 +74,59 @@ function ReservationForm({ onSubmit, onCancel, clubId, reservation = null, isMod
     }
   }, [clubId])
 
-  // Fetch next reservation for selected equipment
-  const fetchNextReservation = useCallback(async (equipmentId) => {
-    if (!equipmentId) {
-      setNextReservation(null);
+  // Check for overlapping reservations and time validation
+  const checkOverlaps = useCallback(async (equipmentId) => {
+    if (!equipmentId || !formData.startTime || !formData.endTime) {
+      setAlertInfo(null);
+      return;
+    }
+
+    const selectedStartTime = new Date(formData.startTime);
+    const selectedEndTime = new Date(formData.endTime);
+    
+    // Check if start time is before end time
+    if (selectedStartTime >= selectedEndTime) {
+      setAlertInfo({
+        type: 'incorrect',
+        message: 'Start time must be before end time'
+      });
       return;
     }
 
     try {
-      setLoadingNextReservation(true);
+      setLoadingOverlapCheck(true);
       const data = await reservationsService.getByClubId(clubId, { 
         equipmentId: equipmentId,
         showActive: 'true'
       });
       
-      // Find the next reservation after the selected start time
-      const selectedStartTime = new Date(formData.startTime);
-      const futureReservations = data.reservations.filter(r => 
-        new Date(r.startTime) > selectedStartTime
-      ).sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+      // Find all overlapping reservations
+      const overlappingReservations = data.reservations.filter(r => {
+        const reservationStart = new Date(r.startTime);
+        const reservationEnd = new Date(r.endTime);
+        
+        // Check if there's any overlap
+        return !(selectedEndTime <= reservationStart || selectedStartTime >= reservationEnd);
+      });
       
-      setNextReservation(futureReservations[0] || null);
+      if (overlappingReservations.length > 0) {
+        setAlertInfo({
+          type: 'overlap',
+          reservations: overlappingReservations
+        });
+      } else {
+        setAlertInfo({
+          type: 'no-overlap',
+          reservations: []
+        });
+      }
     } catch (error) {
-      console.error('Failed to fetch next reservation:', error);
-      setNextReservation(null);
+      console.error('Failed to check overlaps:', error);
+      setAlertInfo(null);
     } finally {
-      setLoadingNextReservation(false);
+      setLoadingOverlapCheck(false);
     }
-  }, [clubId, formData.startTime])
+  }, [clubId, formData.startTime, formData.endTime])
 
   // Fetch equipment when modal opens or clubId changes
   useEffect(() => {
@@ -110,12 +135,12 @@ function ReservationForm({ onSubmit, onCancel, clubId, reservation = null, isMod
     }
   }, [show, clubId, fetchEquipment])
 
-  // Fetch next reservation when equipment or start time changes
+  // Check overlaps when equipment, start time, or end time changes
   useEffect(() => {
     if (formData.equipmentId) {
-      fetchNextReservation(formData.equipmentId);
+      checkOverlaps(formData.equipmentId);
     }
-  }, [formData.equipmentId, formData.startTime, fetchNextReservation])
+  }, [formData.equipmentId, formData.startTime, formData.endTime, checkOverlaps])
 
   // Initialize form data when reservation is provided (modify mode)
   useEffect(() => {
@@ -144,15 +169,15 @@ function ReservationForm({ onSubmit, onCancel, clubId, reservation = null, isMod
     e.preventDefault();
     
     // Validate required fields
-    if (!formData.startTime || !formData.equipmentId || !formData.clubId) {
-      alert('Please fill in all required fields: Start Time, Equipment');
+    if (!formData.startTime || !formData.endTime || !formData.equipmentId || !formData.clubId) {
+      alert('Please fill in all required fields: Start Time, End Time, Equipment');
       return;
     }
 
-    // Validate that end time is after start time if provided
-    if (formData.endTime && new Date(formData.endTime) <= new Date(formData.startTime)) {
+    // Validate that end time is after start time
+    if (new Date(formData.endTime) <= new Date(formData.startTime)) {
       alert('End time must be after start time');
-      return;
+      return
     }
 
     // Convert date and time to proper datetime format for backend
@@ -178,7 +203,7 @@ function ReservationForm({ onSubmit, onCancel, clubId, reservation = null, isMod
       clubId: clubId || '',
       equipmentId: ''
     });
-    setNextReservation(null);
+    setAlertInfo(null);
     onCancel();
   };
 
@@ -215,35 +240,6 @@ function ReservationForm({ onSubmit, onCancel, clubId, reservation = null, isMod
               </Form.Group>
             </Col>
 
-            {/* Next Reservation Info */}
-            <Col md={6}>
-              {formData.equipmentId && (
-                <div className="mb-3">
-                  <Form.Label>Next Reservation</Form.Label>
-                  {loadingNextReservation ? (
-                    <div className="text-muted">Checking availability...</div>
-                  ) : nextReservation ? (
-                    <Alert variant="info" className="py-2">
-                      <small>
-                        <strong>Next reservation:</strong><br />
-                        {new Date(nextReservation.startTime).toLocaleDateString('fi-FI')} at{' '}
-                        {new Date(nextReservation.startTime).toLocaleTimeString('fi-FI', {
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </small>
-                    </Alert>
-                  ) : (
-                    <Alert variant="success" className="py-2">
-                      <small>No upcoming reservations for this equipment</small>
-                    </Alert>
-                  )}
-                </div>
-              )}
-            </Col>
-          </Row>
-
-          <Row>
             {/* Start Time */}
             <Col md={6}>
               <Form.Group className="mb-3">
@@ -257,21 +253,63 @@ function ReservationForm({ onSubmit, onCancel, clubId, reservation = null, isMod
                 />
               </Form.Group>
             </Col>
+          </Row>
 
+          <Row>
             {/* End Time */}
             <Col md={6}>
               <Form.Group className="mb-3">
-                <Form.Label>End Time (Optional)</Form.Label>
+                <Form.Label>End Time *</Form.Label>
                 <Form.Control
                   type="datetime-local"
                   name="endTime"
                   value={formData.endTime}
                   onChange={handleInputChange}
+                  required
                 />
-                <Form.Text className="text-muted">
-                  Leave empty for open-ended reservations
-                </Form.Text>
               </Form.Group>
+            </Col>
+
+            {/* Overlap Info */}
+            <Col md={6}>
+              {formData.equipmentId && formData.startTime && formData.endTime && (
+                <div className="mb-3">
+                  {loadingOverlapCheck ? (
+                    <div className="text-muted">Checking availability...</div>
+                  ) : alertInfo ? (
+                    alertInfo.type === 'incorrect' ? (
+                      <Alert variant="warning" className="py-2">
+                        <small>
+                          <strong>{alertInfo.message}</strong>
+                        </small>
+                      </Alert>
+                    ) : alertInfo.type === 'overlap' ? (
+                      <Alert variant="danger" className="py-2">
+                        <small>
+                          <strong>Overlapping reservations found:</strong><br />
+                          {alertInfo.reservations.map((r) => (
+                            <div key={r.id} className="mb-1">
+                              {new Date(r.startTime).toLocaleDateString('fi-FI')} {new Date(r.startTime).toLocaleTimeString('fi-FI', {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })} - {new Date(r.endTime).toLocaleTimeString('fi-FI', {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </div>
+                          ))}
+                        </small>
+                      </Alert>
+                    ) : (
+                      <Alert variant="success" className="py-2">
+                        <small>No overlapping reservations</small>
+                      </Alert>
+                    )
+                  ) : (
+                    <div className="text-muted">Set start and end times to check for overlaps</div>
+                  )}
+                </div>
+              )}
             </Col>
           </Row>
 
@@ -293,7 +331,11 @@ function ReservationForm({ onSubmit, onCancel, clubId, reservation = null, isMod
           <Button variant="secondary" onClick={handleCancel}>
             Cancel
           </Button>
-          <Button variant="primary" type="submit">
+          <Button 
+            variant="primary" 
+            type="submit"
+            disabled={alertInfo && (alertInfo.type === 'overlap' || alertInfo.type === 'incorrect')}
+          >
             {isModify ? 'Update Reservation' : 'Create Reservation'}
           </Button>
         </Modal.Footer>

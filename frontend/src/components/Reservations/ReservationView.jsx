@@ -5,6 +5,8 @@ import reservationsService from '../../services/reservations'
 import equipmentsService from '../../services/equipments'
 import Reservation from './Reservation'
 import ReservationForm from './ReservationForm'
+import InfoModal from '../InfoModal'
+import InfoIcon from '../../assets/Info.svg'
 
 /**
  * Displays the full reservations page, including the list of reservations and the form to add new reservations.
@@ -24,6 +26,7 @@ function ReservationView({clubId, memberships, setClubChange}) {
   const [activeFilter, setActiveFilter] = useState('Future') // Track which filter is selected
   const [equipment, setEquipment] = useState([])
   const [selectedEquipmentFilter, setSelectedEquipmentFilter] = useState('')
+  const [showInfoModal, setShowInfoModal] = useState(false)
 
   // Helper function to add toasts
   const addToast = (toast) => {
@@ -174,7 +177,16 @@ function ReservationView({clubId, memberships, setClubChange}) {
         <Col>
           {memberships && memberships.length > 1 ? (
             <div className="d-flex align-items-center justify-content-between">
-              <h2 className="mb-0 me-3">Reservations</h2>
+              <div className="d-flex align-items-center">
+                <h2 className="mb-0 me-3">Reservations</h2>
+                <img 
+                  src={InfoIcon} 
+                  alt="Info" 
+                  style={{ width: 24, height: 24, cursor: 'pointer' }}
+                  onClick={() => setShowInfoModal(true)}
+                  title="Click for instructions"
+                />
+              </div>
               <Dropdown>
                 <Dropdown.Toggle variant="outline-primary" id="club-dropdown">
                   {memberships.find(m => m.clubId === clubId) ? 
@@ -197,7 +209,16 @@ function ReservationView({clubId, memberships, setClubChange}) {
             </div>
           ) : (
             <div className="d-flex align-items-center justify-content-between">
-              <h2 className="mb-0">Reservations</h2>
+              <div className="d-flex align-items-center">
+                <h2 className="mb-0 me-3">Reservations</h2>
+                <img 
+                  src={InfoIcon} 
+                  alt="Info" 
+                  style={{ width: 24, height: 24, cursor: 'pointer' }}
+                  onClick={() => setShowInfoModal(true)}
+                  title="Click for instructions"
+                />
+              </div>
               <span className="text-muted fst-italic" style={{ fontSize: '1.1rem' }}>
                 {memberships.find(m => m.clubId === clubId)?.clubName || 'Unknown Club'}
               </span>
@@ -304,6 +325,14 @@ function ReservationView({clubId, memberships, setClubChange}) {
           </div>
         </Col>
       </Row>
+
+      {/* Info Modal */}
+      <InfoModal
+        show={showInfoModal}
+        onHide={() => setShowInfoModal(false)}
+        title="Reservations Instructions"
+        content="<p>Welcome to the Reservations page! Here you can:</p><ul><li>View all equipment reservations</li><li>Create new reservations for equipment</li><li>Filter reservations by different criteria</li><li>Manage your existing reservations</li></ul><p>Use the filters to view 'My' reservations or 'Future' reservations. You can also filter by specific equipment types.</p>"
+      />
     </Container>
   )
 }
