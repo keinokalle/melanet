@@ -28,7 +28,7 @@ const getById = async (id) => {
 };
 
 const create = async (newPaddle) => {
-  console.log(newPaddle)
+  console.log("New paddle", newPaddle)
   const response = await axios.post(baseUrl, newPaddle, getConfig());
   console.log("response", response.data)
   return response.data

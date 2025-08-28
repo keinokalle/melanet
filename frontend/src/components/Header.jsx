@@ -85,7 +85,6 @@ function Header({ isLoggedIn, onLogout, userMemberships, onNavigate, loading }) 
             <div className="alert alert-warning">No club memberships found</div>
           ) : (
             <Nav className="flex-column">
-              <Nav.Link href="#home">Home</Nav.Link>
               <Button 
                 variant="outline-secondary" 
                 className="w-100 mb-2 text-start"
