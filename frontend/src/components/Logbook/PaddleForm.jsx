@@ -524,17 +524,16 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
               {/* Start Time Input */}
               {selectedReservation && (
                 <div className="mb-4">
+                  <p className="text-muted">Insert paddling information:</p>
+              
                   <Form.Group>
-                    <Form.Label>What is the exact start time? *</Form.Label>
+                    <Form.Label>Exact start time *</Form.Label>
                     <Form.Control
                       type="datetime-local"
                       value={startTime}
                       onChange={(e) => setStartTime(e.target.value)}
                       required
                     />
-                    <Form.Text className="text-muted">
-                      Enter when you actually started paddling
-                    </Form.Text>
                   </Form.Group>
                 </div>
               )}
@@ -554,7 +553,6 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
                       required
                     />
                     <Form.Text className="text-muted">
-                      Where are you planning to paddle?
                     </Form.Text>
                   </Form.Group>
                 </div>
@@ -593,8 +591,8 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
         
         <Modal.Body>
           <div className="mb-4">
-            <h5>Create a quick reservation first, then start your paddle.</h5>
-            <p className="text-muted"></p>
+            <h5>Looks like you don't have a reservation for today</h5>
+            <p className="text-muted">Create a quick reservation here to start paddling</p>
           </div>
 
           <Form>
@@ -626,6 +624,9 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
                     min={quickReservationData.startTime}
                     required
                   />
+                  <Form.Text className="text-muted">
+                  If you're not sure when you'll finish, it's a good idea to reserve the whole day. The reservation will automatically end when you finish your paddle.
+                  </Form.Text>
                 </Form.Group>
               </Col>
             </Row>
@@ -688,14 +689,11 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
                         onChange={(e) => setStartTime(e.target.value)}
                         required
                       />
-                      <Form.Text className="text-muted">
-                        When did you actually start paddling?
-                      </Form.Text>
                     </Form.Group>
                   </Col>
                   <Col md={6}>
                     <Form.Group>
-                      <Form.Label>Route</Form.Label>
+                      <Form.Label>Route *</Form.Label>
                       <Form.Control
                         name="info"
                         as="textarea"

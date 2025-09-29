@@ -8,20 +8,6 @@ const { info: logInfo, error: logError } = require('./logger')
  */
 
 
-/*
-const sequelize = new Sequelize(DATABASE_URL, {
-  logging: (sql, queryObject) => {
-    console.log('\n' + '='.repeat(50));
-    console.log('SQL QUERY:');
-    console.log('='.repeat(50));
-    console.log(sql);
-    if (queryObject && queryObject.bind) {
-      console.log('\nPARAMETERS:', queryObject.bind);
-    }
-    console.log('='.repeat(50) + '\n');
-  }
-})
-*/
 const sequelize = new Sequelize(DATABASE_URL, {
   logging: false
 })

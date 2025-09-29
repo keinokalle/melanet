@@ -309,12 +309,12 @@ function LogbookView({clubId, memberships, setClubChange}) {
                 disabled={isLoading}
               >
                 {isLoading ? 'Loading...' : (
-                  isPaddling ? 'End Paddle' : 'New Paddle'
+                  isPaddling ? 'End Paddle' : 'Start Paddle'
                 )}
               </Button>
               {hasMultipleActive && (
                 <small className="text-warning d-block mt-1">
-                  ⚠️ Multiple active paddles detected
+                  Multiple active paddles detected
                 </small>
               )}
             </div>
