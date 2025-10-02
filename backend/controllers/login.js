@@ -9,6 +9,12 @@ const User = require('../models/user')
 router.post('/', requestLogger, async (request, response) => {
   const body = request.body
 
+  if(!body.username || !body.password) {
+    return response.status(400).json({
+      error: 'username and password are required'
+    })
+  }
+
   logInfo('Login attempt for username:', body.username)
 
   const user = await User.findOne({
