@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken')
-const bcrypt = require('bcrypt')  
+const bcrypt = require('bcrypt')
 const router = require('express').Router()
 const { requestLogger } = require('../util/middlevare')
 const { info: logInfo, error: logError } = require('../util/logger')

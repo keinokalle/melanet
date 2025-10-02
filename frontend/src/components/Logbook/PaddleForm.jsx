@@ -5,35 +5,28 @@ import reservationsService from '../../services/reservations'
 
 /**
  * Shared form component for creating and modifying paddle events.
- * Now includes reservation checking flow.
- * @param {Object} props
- * @param {Function} props.onSubmit - Called with paddle data when form is submitted.
- * @param {Function} [props.onCancel] - Called when the form is cancelled.
- * @param {string} props.clubId - The ID of the current club
- * @param {Object} [props.paddle] - Paddle data for modification mode
- * @param {boolean} [props.isModify] - Whether this is modification mode
- * @param {boolean} props.show - Whether the modal should be shown
- * @returns {JSX.Element} – A Bootstrap modal for adding or modifying paddle data
+ *
+ * Used cursor here to pivot some stuff...
  */
 
 function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = false, show = false }) {
   // Calculate default start time (current time) in Finland timezone
   const getDefaultStartTime = () => {
-    const now = new Date();
-    now.setMinutes(now.getMinutes());
-    
+    const now = new Date()
+    now.setMinutes(now.getMinutes())
+
     // Convert to Finland timezone (Europe/Helsinki)
-    const finlandTime = new Date(now.toLocaleString("en-US", {timeZone: "Europe/Helsinki"}));
-    
+    const finlandTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Helsinki' }))
+
     // Format for datetime-local input (YYYY-MM-DDTHH:MM)
-    const year = finlandTime.getFullYear();
-    const month = String(finlandTime.getMonth() + 1).padStart(2, '0');
-    const day = String(finlandTime.getDate()).padStart(2, '0');
-    const hours = String(finlandTime.getHours()).padStart(2, '0');
-    const minutes = String(finlandTime.getMinutes()).padStart(2, '0');
-    
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  };
+    const year = finlandTime.getFullYear()
+    const month = String(finlandTime.getMonth() + 1).padStart(2, '0')
+    const day = String(finlandTime.getDate()).padStart(2, '0')
+    const hours = String(finlandTime.getHours()).padStart(2, '0')
+    const minutes = String(finlandTime.getMinutes()).padStart(2, '0')
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`
+  }
 
   const [equipment, setEquipment] = useState([])
   const [loadingEquipment, setLoadingEquipment] = useState(false)
@@ -53,16 +46,16 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
 
   // Format datetime for input field (YYYY-MM-DDTHH:MM)
   const formatDateTimeForInput = (dateTimeString) => {
-    if (!dateTimeString) return '';
-    const date = new Date(dateTimeString);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  };
+    if (!dateTimeString) return ''
+    const date = new Date(dateTimeString)
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`
+  }
 
   const [formData, setFormData] = useState({
     startTime: getDefaultStartTime(),
@@ -73,66 +66,66 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
     userId: localStorage.getItem('userId') || '',
     clubId: clubId || '',
     equipmentId: ''
-  });
+  })
 
   const fetchEquipment = useCallback(async () => {
     try {
-      setLoadingEquipment(true);
-      const data = await equipmentsService.getByClubId(clubId);
-      setEquipment(data.equipment || data); // Handle different response formats
+      setLoadingEquipment(true)
+      const data = await equipmentsService.getByClubId(clubId)
+      setEquipment(data.equipment || data) // Handle different response formats
     } catch (error) {
-      console.error('Failed to fetch equipment:', error);
-      setEquipment([]);
+      console.error('Failed to fetch equipment:', error)
+      setEquipment([])
     } finally {
-      setLoadingEquipment(false);
+      setLoadingEquipment(false)
     }
   }, [clubId])
 
   // Check for user reservations on the current day
   const checkUserReservations = useCallback(async () => {
-    if (!clubId || isModify) return;
-    
+    if (!clubId || isModify) return
+
     try {
-      setLoadingReservations(true);
-      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-      const userId = localStorage.getItem('userId');
-      const data = await reservationsService.getByClubId(clubId, { userId, date: today });
-      
+      setLoadingReservations(true)
+      const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD format
+      const userId = localStorage.getItem('userId')
+      const data = await reservationsService.getByClubId(clubId, { userId, date: today })
+
       if (data.reservations && data.reservations.length > 0) {
-        setUserReservations(data.reservations);
-        setShowReservationFlow(true);
-        setShowQuickReservation(false);
+        setUserReservations(data.reservations)
+        setShowReservationFlow(true)
+        setShowQuickReservation(false)
       } else {
         // No reservations found - show quick reservation interface
-        setShowReservationFlow(false);
-        setShowQuickReservation(true);
+        setShowReservationFlow(false)
+        setShowQuickReservation(true)
       }
     } catch (error) {
-      console.error('Failed to check reservations:', error);
+      console.error('Failed to check reservations:', error)
       // If there's an error, show quick reservation interface
-      setShowReservationFlow(false);
-      setShowQuickReservation(true);
+      setShowReservationFlow(false)
+      setShowQuickReservation(true)
     } finally {
-      setLoadingReservations(false);
+      setLoadingReservations(false)
     }
-  }, [clubId, isModify]);
+  }, [clubId, isModify])
 
   // Fetch equipment when modal opens or clubId changes
   useEffect(() => {
     if (show && clubId) {
-      fetchEquipment();
+      fetchEquipment()
       if (!isModify) {
-        checkUserReservations();
+        checkUserReservations()
       }
     }
   }, [show, clubId, fetchEquipment, checkUserReservations, isModify])
 
   // Initialize form data when paddle is provided (modify mode)
   useEffect(() => {
-    console.log('PaddleForm useEffect - paddle:', paddle, 'isModify:', isModify);
+    console.log('PaddleForm useEffect - paddle:', paddle, 'isModify:', isModify)
     if (paddle && isModify) {
-      console.log('Paddle length value:', paddle.length, 'Type:', typeof paddle.length);
-      console.log('Paddle visitors value:', paddle.visitors, 'Type:', typeof paddle.visitors);
+      console.log('Paddle length value:', paddle.length, 'Type:', typeof paddle.length)
+      console.log('Paddle visitors value:', paddle.visitors, 'Type:', typeof paddle.visitors)
       console.log('What paddle is here??', paddle)
       const formDataToSet = {
         startTime: formatDateTimeForInput(paddle.startTime),
@@ -143,35 +136,33 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
         userId: paddle.userId || localStorage.getItem('userId') || '',
         clubId: paddle.clubId || clubId || '',
         equipmentId: paddle.equipmentId || ''
-      };
-      console.log('Setting form data:', formDataToSet);
-      setFormData(formDataToSet);
+      }
+      console.log('Setting form data:', formDataToSet)
+      setFormData(formDataToSet)
     }
-  }, [paddle, isModify, clubId]);
+  }, [paddle, isModify, clubId])
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
       [name]: value,
-    }));
-  };
-
-
+    }))
+  }
 
   const handleReservationSelect = (reservation) => {
-    setSelectedReservation(reservation);
+    setSelectedReservation(reservation)
     setFormData(prev => ({
       ...prev,
       equipmentId: reservation.equipmentId,
       startTime: formatDateTimeForInput(reservation.startTime)
-    }));
-  };
+    }))
+  }
 
   const handleStartPaddle = () => {
     if (!selectedReservation || !startTime || !formData.info) {
-      alert('Please select a reservation, enter the start time, and provide a route');
-      return;
+      alert('Please select a reservation, enter the start time, and provide a route')
+      return
     }
 
     // Create paddle data from the selected reservation
@@ -184,64 +175,64 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
       userId: parseInt(localStorage.getItem('userId')),
       clubId: parseInt(clubId),
       equipmentId: parseInt(selectedReservation.equipmentId)
-    };
+    }
 
-    onSubmit(paddleData);
-    if (onCancel) onCancel();
-  };
+    onSubmit(paddleData)
+    if (onCancel) onCancel()
+  }
 
   const checkAvailableEquipment = async () => {
-    if (!quickReservationData.startTime || !quickReservationData.endTime) return;
-    
+    if (!quickReservationData.startTime || !quickReservationData.endTime) return
+
     try {
-      setLoadingAvailableEquipment(true);
-      
+      setLoadingAvailableEquipment(true)
+
       // Check for conflicts with existing reservations
-      const startTime = new Date(quickReservationData.startTime);
-      const endTime = new Date(quickReservationData.endTime);
-      
+      const startTime = new Date(quickReservationData.startTime)
+      const endTime = new Date(quickReservationData.endTime)
+
       // Get all equipment for the club
-      const allEquipment = await equipmentsService.getByClubId(clubId);
-      const equipmentList = allEquipment.equipment || allEquipment;
-      
+      const allEquipment = await equipmentsService.getByClubId(clubId)
+      const equipmentList = allEquipment.equipment || allEquipment
+
       // Get existing reservations for the time period
       const existingReservations = await reservationsService.getByClubId(clubId, {
         date: startTime.toISOString().split('T')[0]
-      });
-      
+      })
+
       // Filter out equipment that has conflicts
       const available = equipmentList.filter(equipment => {
         const hasConflict = existingReservations.reservations.some(reservation => {
-          if (reservation.equipmentId !== equipment.id) return false;
-          
-          const reservationStart = new Date(reservation.startTime);
-          const reservationEnd = reservation.endTime ? new Date(reservation.endTime) : null;
-          
+          if (reservation.equipmentId !== equipment.id) return false
+
+          const reservationStart = new Date(reservation.startTime)
+          const reservationEnd = reservation.endTime ? new Date(reservation.endTime) : null
+
           // Check for time overlap
           if (reservationEnd) {
-            return !(endTime <= reservationStart || startTime >= reservationEnd);
+            return !(endTime <= reservationStart || startTime >= reservationEnd)
           } else {
             // Reservation has no end time, consider it conflicting
-            return true;
+            return true
           }
-        });
-        
-        return !hasConflict;
-      });
-      
-      setAvailableEquipment(available);
+        })
+
+        return !hasConflict
+      })
+
+      setAvailableEquipment(available)
     } catch (error) {
-      console.error('Failed to check available equipment:', error);
-      alert('Failed to check available equipment. Please try again.');
+      console.error('Failed to check available equipment:', error)
+      alert('Failed to check available equipment. Please try again.')
     } finally {
-      setLoadingAvailableEquipment(false);
+      setLoadingAvailableEquipment(false)
     }
-  };
+  }
 
   const handleQuickReservationAndPaddle = async () => {
     if (!selectedEquipment || !startTime || !quickReservationData.startTime) {
-      alert('Please fill in all required fields');
-      return;
+      alert('Please fill in all required fields')
+      return
     }
 
     try {
@@ -252,10 +243,10 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
         equipmentId: parseInt(selectedEquipment.id),
         clubId: parseInt(clubId),
         detail: 'Quick reservation created from paddle form'
-      };
+      }
 
-      await reservationsService.create(reservationData);
-      
+      await reservationsService.create(reservationData)
+
       // Then create the paddle
       const paddleData = {
         startTime: new Date(startTime).toISOString(),
@@ -266,19 +257,19 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
         userId: parseInt(localStorage.getItem('userId')),
         clubId: parseInt(clubId),
         equipmentId: parseInt(selectedEquipment.id)
-      };
+      }
 
-      onSubmit(paddleData);
-      if (onCancel) onCancel();
+      onSubmit(paddleData)
+      if (onCancel) onCancel()
     } catch (error) {
-      console.error('Failed to create reservation and paddle:', error);
-      alert('Failed to create reservation. Please try again.');
+      console.error('Failed to create reservation and paddle:', error)
+      alert('Failed to create reservation. Please try again.')
     }
-  };
+  }
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    
+    e.preventDefault()
+
     // Validate required fields
     if (
       formData.startTime &&
@@ -287,9 +278,9 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
       formData.equipmentId
     ) {
       // Convert date and time to proper datetime format for backend
-      const startDateTime = new Date(formData.startTime).toISOString();
-      const endDateTime = formData.endTime ? new Date(formData.endTime).toISOString() : null;
-      
+      const startDateTime = new Date(formData.startTime).toISOString()
+      const endDateTime = formData.endTime ? new Date(formData.endTime).toISOString() : null
+
       const paddleData = {
         ...formData,
         startTime: startDateTime,
@@ -299,10 +290,10 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
         userId: parseInt(formData.userId),
         clubId: parseInt(formData.clubId),
         equipmentId: parseInt(formData.equipmentId)
-      };
-      
-      onSubmit(paddleData);
-      
+      }
+
+      onSubmit(paddleData)
+
       // Reset form only if not in modify mode
       if (!isModify) {
         setFormData({
@@ -314,18 +305,18 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
           userId: localStorage.getItem('userId') || '',
           clubId: clubId || '',
           equipmentId: ''
-        });
+        })
       }
-      
-      if (onCancel) onCancel();
+
+      if (onCancel) onCancel()
     } else {
-      alert('Please fill in all required fields: Start Time, Equipment ID');
+      alert('Please fill in all required fields: Start Time, Equipment ID')
     }
-  };
+  }
 
   const handleClose = () => {
-    if (onCancel) onCancel();
-  };
+    if (onCancel) onCancel()
+  }
 
   // If this is modification mode, show the original form
   if (isModify) {
@@ -334,11 +325,11 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
         <Modal.Header closeButton>
           <Modal.Title>Modify Paddle</Modal.Title>
         </Modal.Header>
-        
-              <Modal.Body>
 
-        <Form onSubmit={handleSubmit}>
-          {/* Row 1: Start Time and Equipment - Always shown */}
+        <Modal.Body>
+
+          <Form onSubmit={handleSubmit}>
+            {/* Row 1: Start Time and Equipment - Always shown */}
             <Row className="mb-3">
               <Col md={6}>
                 <Form.Group>
@@ -388,7 +379,7 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
                   />
                 </Form.Group>
               </Col>
-              
+
             </Row>
 
             {/* Row 3: End Time and Length - Only for modify/end */}
@@ -418,12 +409,12 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
                     placeholder="e.g., 5.5"
                     onBlur={(e) => {
                       // Ensure valid float value on blur
-                      const value = parseFloat(e.target.value);
+                      const value = parseFloat(e.target.value)
                       if (!isNaN(value) && value >= 0) {
                         setFormData(prev => ({
                           ...prev,
                           length: value.toFixed(1)
-                        }));
+                        }))
                       }
                     }}
                   />
@@ -449,7 +440,7 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
             </Row>
           </Form>
         </Modal.Body>
-        
+
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>
             Cancel
@@ -459,7 +450,7 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
           </Button>
         </Modal.Footer>
       </Modal>
-    );
+    )
   }
 
   // Show reservation flow if user has reservations today
@@ -469,7 +460,7 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
         <Modal.Header closeButton>
           <Modal.Title>Start Paddle from Reservation</Modal.Title>
         </Modal.Header>
-        
+
         <Modal.Body>
           {loadingReservations ? (
             <div className="text-center py-4">
@@ -488,8 +479,8 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
               {/* Reservation Cards */}
               <div className="mb-4">
                 {userReservations.map((reservation) => (
-                  <Card 
-                    key={reservation.id} 
+                  <Card
+                    key={reservation.id}
                     className={`mb-2 ${selectedReservation?.id === reservation.id ? 'border-primary' : ''}`}
                     style={{ cursor: 'pointer' }}
                     onClick={() => handleReservationSelect(reservation)}
@@ -499,13 +490,13 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
                         <div>
                           <h6 className="mb-1">{reservation.equipment?.name}</h6>
                           <small className="text-muted">
-                            {new Date(reservation.startTime).toLocaleTimeString('fi-FI', { 
-                              hour: '2-digit', 
-                              minute: '2-digit' 
-                            })} - {reservation.endTime ? 
-                              new Date(reservation.endTime).toLocaleTimeString('fi-FI', { 
-                                hour: '2-digit', 
-                                minute: '2-digit' 
+                            {new Date(reservation.startTime).toLocaleTimeString('fi-FI', {
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })} - {reservation.endTime ?
+                              new Date(reservation.endTime).toLocaleTimeString('fi-FI', {
+                                hour: '2-digit',
+                                minute: '2-digit'
                               }) : 'No end time'
                             }
                           </small>
@@ -525,7 +516,7 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
               {selectedReservation && (
                 <div className="mb-4">
                   <p className="text-muted">Insert paddling information:</p>
-              
+
                   <Form.Group>
                     <Form.Label>Exact start time *</Form.Label>
                     <Form.Control
@@ -562,14 +553,14 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
             </>
           )}
         </Modal.Body>
-        
+
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>
             Cancel
           </Button>
           {selectedReservation && (
-            <Button 
-              variant="primary" 
+            <Button
+              variant="primary"
               onClick={handleStartPaddle}
               disabled={!startTime || !formData.info}
             >
@@ -578,7 +569,7 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
           )}
         </Modal.Footer>
       </Modal>
-    );
+    )
   }
 
   // Show Quick Reservation interface if no reservations found
@@ -588,7 +579,7 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
         <Modal.Header closeButton>
           <Modal.Title>Reservation Required</Modal.Title>
         </Modal.Header>
-        
+
         <Modal.Body>
           <div className="mb-4">
             <h5>Looks like you don't have a reservation for today</h5>
@@ -625,7 +616,7 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
                     required
                   />
                   <Form.Text className="text-muted">
-                  If you're not sure when you'll finish, it's a good idea to reserve the whole day. The reservation will automatically end when you finish your paddle.
+                    If you're not sure when you'll finish, it's a good idea to reserve the whole day. The reservation will automatically end when you finish your paddle.
                   </Form.Text>
                 </Form.Group>
               </Col>
@@ -634,8 +625,8 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
             {/* Available Equipment */}
             {quickReservationData.startTime && quickReservationData.endTime && (
               <div className="mb-3">
-                <Button 
-                  variant="outline-primary" 
+                <Button
+                  variant="outline-primary"
                   onClick={() => checkAvailableEquipment()}
                   disabled={loadingAvailableEquipment}
                 >
@@ -650,7 +641,7 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
                 <div className="row">
                   {availableEquipment.map((item) => (
                     <div key={item.id} className="col-md-6 mb-2">
-                      <Card 
+                      <Card
                         className={`${selectedEquipment?.id === item.id ? 'border-primary' : ''}`}
                         style={{ cursor: 'pointer' }}
                         onClick={() => setSelectedEquipment(item)}
@@ -711,23 +702,23 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
 
           </Form>
         </Modal.Body>
-        
+
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>
             Cancel
           </Button>
           {selectedEquipment && (
-            <Button 
-              variant="primary" 
+            <Button
+              variant="primary"
               onClick={handleQuickReservationAndPaddle}
               disabled={!startTime || !quickReservationData.startTime || !quickReservationData.endTime}
             >
-          Create Reservation & Start Paddle
-        </Button>
-            )}
+              Create Reservation & Start Paddle
+            </Button>
+          )}
         </Modal.Footer>
       </Modal>
-    );
+    )
   }
 
   // Show the original form if no reservations or in fallback mode
@@ -736,7 +727,7 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
       <Modal.Header closeButton>
         <Modal.Title>Add New Paddle</Modal.Title>
       </Modal.Header>
-      
+
       <Modal.Body>
         <Form onSubmit={handleSubmit}>
           {/* Row 1: Start Time and Equipment - Always shown */}
@@ -793,7 +784,7 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
           </Row>
         </Form>
       </Modal.Body>
-      
+
       <Modal.Footer>
         <Button variant="secondary" onClick={handleClose}>
           Cancel
@@ -803,7 +794,7 @@ function PaddleForm({ onSubmit, onCancel, clubId, paddle = null, isModify = fals
         </Button>
       </Modal.Footer>
     </Modal>
-  );
+  )
 }
 
-export default PaddleForm; 
+export default PaddleForm

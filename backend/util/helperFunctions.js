@@ -31,13 +31,13 @@ const findMember = async (userId, clubId) => {
 const addPaddlePermissions = async (paddleData, userId) => {
   // Check if user is superadmin
   const isSuperadmin = await findSuperadmin(userId)
-  
+
   // Check if user is club admin
   const isClubAdmin = await findAdmin(userId, paddleData.clubId)
 
   return {
     ...paddleData,
-    canEdit: 
+    canEdit:
       paddleData.userId === userId || // User owns the paddle
       isClubAdmin || // User is club admin
       isSuperadmin // User is superadmin

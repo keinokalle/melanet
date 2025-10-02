@@ -16,12 +16,18 @@ module.exports = {
     // Ensure id is the only primary key (should already be the case if using autoIncrement id)
     // No further action needed if id is already primary key
 
-    // Optionally, ensure unique constraint on (club_id, user_id) exists
-    await queryInterface.addConstraint('memberships', {
-      fields: ['club_id', 'user_id'],
-      type: 'unique',
-      name: 'memberships_club_id_user_id_unique'
-    })
+    // Check if unique constraint already exists before adding it
+    const constraints = await queryInterface.showConstraint('memberships')
+    const constraintExists = constraints.some(constraint => constraint.constraintName === 'memberships_club_id_user_id_unique')
+
+    if (!constraintExists) {
+      // Optionally, ensure unique constraint on (club_id, user_id) exists
+      await queryInterface.addConstraint('memberships', {
+        fields: ['club_id', 'user_id'],
+        type: 'unique',
+        name: 'memberships_club_id_user_id_unique'
+      })
+    }
   },
 
   down: async ({ context: queryInterface }) => {

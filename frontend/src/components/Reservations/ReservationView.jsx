@@ -10,15 +10,11 @@ import InfoIcon from '../../assets/Info.svg'
 
 /**
  * Displays the full reservations page, including the list of reservations and the form to add new reservations.
- * @component 
- * @param {Object} props - Component props
- * @param {string} props.clubId - The ID of the current club
- * @param {Array} props.memberships - Array of user memberships
- * @param {Function} props.setClubChange - Function to change the selected club
- * @returns {JSX.Element} The rendered reservations view.
+ * Reservation.jsx is a JSX component for the resrvation cards presented
+ * ResrvationForm.jsx has the form component for making reservations
  */
 
-function ReservationView({clubId, memberships, setClubChange}) {
+function ReservationView({ clubId, memberships, setClubChange }) {
   const [reservations, setReservations] = useState([])
   const [showForm, setShowForm] = useState(false)
   const [toasts, setToasts] = useState([])
@@ -98,10 +94,10 @@ function ReservationView({clubId, memberships, setClubChange}) {
       try {
         setIsLoading(true)
         await reservationsService.remove(reservationId)
-        
+
         // Remove the deleted reservation from the local state
         setReservations(prev => prev.filter(r => r.id !== reservationId))
-        
+
         addToast(createToast('Reservation deleted successfully!', 'Success', 'success'))
       } catch (error) {
         const { errorMessage, errorTitle } = handleApiError(error, 'reservation deletion')
@@ -116,14 +112,14 @@ function ReservationView({clubId, memberships, setClubChange}) {
     if (clubId) {
       // Fetch equipment for the filter dropdown
       fetchEquipment()
-      
+
       // Function to fetch reservations based on active filter
       const fetchReservations = () => {
         setIsLoading(true)
-        
+
         // Build query parameters based on active filter
         let queryParams = {}
-        
+
         if (activeFilter === 'My') {
           queryParams.userId = localStorage.getItem('userId')
         } else if (activeFilter === 'Future') {
@@ -131,16 +127,16 @@ function ReservationView({clubId, memberships, setClubChange}) {
           // This will be handled by the backend to filter reservations with endTime > now
           queryParams.showActive = 'true'
         }
-        
+
         // Add equipment filter if selected
         if (selectedEquipmentFilter) {
           queryParams.equipmentId = selectedEquipmentFilter
         }
-        
+
         reservationsService.getByClubId(clubId, queryParams)
           .then(data => {
             setReservations(data.reservations)
-            console.log("Reservations with filter:", activeFilter, "equipment:", selectedEquipmentFilter, data.reservations)
+            console.log('Reservations with filter:', activeFilter, 'equipment:', selectedEquipmentFilter, data.reservations)
           })
           .catch(err => {
             const { errorMessage, errorTitle } = handleApiError(err, 'reservations')
@@ -151,7 +147,7 @@ function ReservationView({clubId, memberships, setClubChange}) {
             setIsLoading(false)
           })
       }
-      
+
       fetchReservations()
     }
   }, [clubId, activeFilter, selectedEquipmentFilter])
@@ -179,9 +175,9 @@ function ReservationView({clubId, memberships, setClubChange}) {
             <div className="d-flex align-items-center justify-content-between">
               <div className="d-flex align-items-center">
                 <h2 className="mb-0 me-3">Reservations</h2>
-                <img 
-                  src={InfoIcon} 
-                  alt="Info" 
+                <img
+                  src={InfoIcon}
+                  alt="Info"
                   style={{ width: 24, height: 24, cursor: 'pointer' }}
                   onClick={() => setShowInfoModal(true)}
                   title="Click for instructions"
@@ -189,14 +185,14 @@ function ReservationView({clubId, memberships, setClubChange}) {
               </div>
               <Dropdown>
                 <Dropdown.Toggle variant="outline-primary" id="club-dropdown">
-                  {memberships.find(m => m.clubId === clubId) ? 
-                    memberships.find(m => m.clubId === clubId).clubName : 
+                  {memberships.find(m => m.clubId === clubId) ?
+                    memberships.find(m => m.clubId === clubId).clubName :
                     'Select Club'
                   }
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
                   {memberships.map((membership) => (
-                    <Dropdown.Item 
+                    <Dropdown.Item
                       key={membership.clubId}
                       onClick={() => setClubChange(membership.clubId)}
                       active={membership.clubId === clubId}
@@ -211,9 +207,9 @@ function ReservationView({clubId, memberships, setClubChange}) {
             <div className="d-flex align-items-center justify-content-between">
               <div className="d-flex align-items-center">
                 <h2 className="mb-0 me-3">Reservations</h2>
-                <img 
-                  src={InfoIcon} 
-                  alt="Info" 
+                <img
+                  src={InfoIcon}
+                  alt="Info"
                   style={{ width: 24, height: 24, cursor: 'pointer' }}
                   onClick={() => setShowInfoModal(true)}
                   title="Click for instructions"
@@ -233,23 +229,23 @@ function ReservationView({clubId, memberships, setClubChange}) {
           <div className="d-flex justify-content-between align-items-center">
             {/* Filter Button Group */}
             <div className="btn-group" role="group" aria-label="Reservation filters">
-              <Button 
+              <Button
                 variant={activeFilter === 'My' ? 'primary' : 'outline-secondary'}
                 onClick={() => handleFilterClick('My')}
               >
                 My
               </Button>
-              <Button 
+              <Button
                 variant={activeFilter === 'Future' ? 'primary' : 'outline-secondary'}
                 onClick={() => handleFilterClick('Future')}
               >
                 Future
               </Button>
             </div>
-            
+
             {/* New Reservation Button */}
             <div className="text-end">
-              <Button 
+              <Button
                 variant="primary"
                 onClick={handleMainButtonClick}
                 disabled={isLoading}
@@ -280,10 +276,10 @@ function ReservationView({clubId, memberships, setClubChange}) {
       </Row>
 
       {/* ReservationForm Modal */}
-      <ReservationForm 
+      <ReservationForm
         show={showForm}
-        onSubmit={handleSubmitReservation} 
-        onCancel={handleCancelForm} 
+        onSubmit={handleSubmitReservation}
+        onCancel={handleCancelForm}
         clubId={clubId}
       />
 
@@ -310,7 +306,7 @@ function ReservationView({clubId, memberships, setClubChange}) {
                     ...reservation,
                     canEdit: true // TODO: Implement proper permission checking
                   }
-                  
+
                   return (
                     <Reservation
                       key={reservation.id}

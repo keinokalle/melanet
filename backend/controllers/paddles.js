@@ -25,33 +25,33 @@ const getPaddleQueryConfig = () => ({
 // Some additional middleware for paddles
 
 const canEditPaddle = async (req, res, next) => {
-  
+
   try {
     const userId = req.decodedToken.id
     console.log('Looking for paddle with ID:', req.params.id)
     const paddle = await Paddle.findByPk(req.params.id)
-    
+
     if (!paddle) {
       return res.status(404).json({ error: 'Paddle not found' })
     }
-    
+
     console.log('Found paddle:', paddle.toJSON())
-    
+
     // Check if user is the owner of the paddle
     if (paddle.userId === userId) return next()
-    
+
     // Check if user is admin of the club that owns this paddle
     if (await findAdmin(userId, paddle.clubId)) return next()
-    
+
     // Check if user is superadmin
     if (await findSuperadmin(userId)) return next()
-    
+
     return res.status(401).json({ error: 'unauthorized' })
   } catch (error) {
     console.error('Error in canEditPaddle:', error)
-    return res.status(500).json({ 
+    return res.status(500).json({
       error: 'Internal server error',
-      details: error.message 
+      details: error.message
     })
   }
 }
@@ -71,25 +71,25 @@ router.get('/:id', tokenExtractor, isSuperAdmin, async (req, res) => {
 })
 
 // Add pagination and filtering to GET endpoint
-//  
+//
 router.get('/club/:clubId', tokenExtractor, isMember, async (req, res) => {
   const { clubId } = req.params
   // Default values for pagination and filtering, they change if query params are provided
   const { page = 1, limit = 20, showActive = null, userId = null } = req.query
   const currentUserId = parseInt(req.decodedToken.id)
-  
+
   try {
     const offset = (page - 1) * limit
-    
+
     // Build where clause
     let whereClause = { club_id: clubId }
-    
+
     // Filter by user if specified
     if (userId) {
       whereClause.userId = parseInt(userId)
       console.log('Filtering by user ID:', whereClause.userId, 'Type:', typeof whereClause.userId)
     }
-    
+
     // Filter by active status if specified
     if (showActive === 'true') {
       // Show only active paddles (not completed)
@@ -108,9 +108,9 @@ router.get('/club/:clubId', tokenExtractor, isMember, async (req, res) => {
       }
     }
     // If showActive is null/undefined, show all paddles
-    
+
     console.log('Final where clause:', JSON.stringify(whereClause, null, 2))
-    
+
     const paddles = await Paddle.findAndCountAll({
       where: whereClause,
       ...getPaddleQueryConfig(),
@@ -151,12 +151,12 @@ router.post('/', tokenExtractor, async (req, res) => {
   }
   try {
     logInfo('Here')
-    const paddle = await Paddle.create({ 
-      startTime, 
-      endTime, 
-      info, 
-      userId, 
-      clubId, 
+    const paddle = await Paddle.create({
+      startTime,
+      endTime,
+      info,
+      userId,
+      clubId,
       equipmentId,
       length,
       visitors,
@@ -180,18 +180,18 @@ router.put('/:id', tokenExtractor, canEditPaddle, async (req, res) => {
     return res.status(404).json({ error: 'Paddle not found' })
   }
   const { startTime, endTime, info, userId, clubId, equipmentId, length, visitors, additionalInfo } = req.body
-  await paddle.update({ 
-    startTime, 
-    endTime, 
-    info, 
-    userId, 
-    clubId, 
+  await paddle.update({
+    startTime,
+    endTime,
+    info,
+    userId,
+    clubId,
     equipmentId,
     length,
     visitors,
     additionalInfo
   })
-  
+
   // Return the updated paddle with the same structure as GET endpoints
   const updatedPaddle = await Paddle.findByPk(req.params.id, getPaddleQueryConfig())
 

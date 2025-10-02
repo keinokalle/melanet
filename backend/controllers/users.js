@@ -29,25 +29,25 @@ router.get('/:id', userFinder, async (req, res) => {
 
 // Create a new user
 /**
- * This method works as well. Good if you need to 
+ * This method works as well. Good if you need to
  * modify them before saving to the database.
- * 
+ *
  * const user = User.build(req.body)
  * await user.save()
  */
 router.post('/', async (req, res) => {
   const { username, name, password, email } = req.body
-  
+
   // Validate required fields
   if (!username || !password || !email) {
-    return res.status(400).json({ 
-      error: 'username, password, and email are required' 
+    return res.status(400).json({
+      error: 'username, password, and email are required'
     })
   }
-  
+
   if(password.length < 3){
-    return res.status(400).json({ 
-      error: 'password must be at least 3 characters long' 
+    return res.status(400).json({
+      error: 'password must be at least 3 characters long'
     })
   }
 

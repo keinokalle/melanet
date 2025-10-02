@@ -1,29 +1,32 @@
-import js from '@eslint/js'
 import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import { defineConfig, globalIgnores } from 'eslint/config'
+import js from '@eslint/js'
+import stylisticJs from '@stylistic/eslint-plugin-js'
+import pluginReact from 'eslint-plugin-react'
 
-export default defineConfig([
-  globalIgnores(['dist']),
+export default [
+  js.configs.recommended,
   {
-    files: ['**/*.{js,jsx}'],
-    extends: [
-      js.configs.recommended,
-      reactHooks.configs['recommended-latest'],
-      reactRefresh.configs.vite,
-    ],
-    languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
-      parserOptions: {
-        ecmaVersion: 'latest',
-        ecmaFeatures: { jsx: true },
-        sourceType: 'module',
-      },
+    files: ['**/*.{js,mjs,cjs,jsx}'],
+    languageOptions: { globals: globals.browser }
+  },
+  pluginReact.configs.flat.recommended,
+  {
+    plugins: {
+      '@stylistic/js': stylisticJs,
     },
     rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      '@stylistic/js/indent': ['error', 2],
+      '@stylistic/js/linebreak-style': ['error', 'unix'],
+      '@stylistic/js/quotes': ['error', 'single'],
+      '@stylistic/js/semi': ['error', 'never'],
+      eqeqeq: 'error',
+      'no-trailing-spaces': 'error',
+      'object-curly-spacing': ['error', 'always'],
+      'arrow-spacing': ['error', { before: true, after: true }],
+      'no-console': 'off',
+      'react/react-in-jsx-scope': 'off',
+      'react/prop-types': 'off',
+      'react/no-unescaped-entities': 'off',
     },
-  },
-])
+  }
+]

@@ -20,7 +20,7 @@ module.exports = {
   down: async ({ context: queryInterface }) => {
     // Remove additionalInfo field
     await queryInterface.removeColumn('paddles', 'additional_info')
-    
+
     // Remove length field
     await queryInterface.removeColumn('paddles', 'length')
   }

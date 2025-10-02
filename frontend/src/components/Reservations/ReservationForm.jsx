@@ -5,14 +5,6 @@ import reservationsService from '../../services/reservations'
 
 /**
  * Form component for creating and modifying reservations.
- * @param {Object} props
- * @param {Function} props.onSubmit - Called with reservation data when form is submitted.
- * @param {Function} [props.onCancel] - Called when the form is cancelled.
- * @param {string} props.clubId - The ID of the current club
- * @param {Object} [props.reservation] - Reservation data for modification mode
- * @param {boolean} [props.isModify] - Whether this is modification mode
- * @param {boolean} props.show - Whether the modal should be shown
- * @returns {JSX.Element} – A Bootstrap modal for adding or modifying reservation data
  */
 
 function ReservationForm({ onSubmit, onCancel, clubId, reservation = null, isModify = false, show = false }) {
@@ -23,34 +15,34 @@ function ReservationForm({ onSubmit, onCancel, clubId, reservation = null, isMod
 
   // Calculate default start time (current time + 10 minutes) in Finland timezone
   const getDefaultStartTime = () => {
-    const now = new Date();
-    now.setMinutes(now.getMinutes() + 10);
-    
+    const now = new Date()
+    now.setMinutes(now.getMinutes() + 10)
+
     // Convert to Finland timezone (Europe/Helsinki)
-    const finlandTime = new Date(now.toLocaleString("en-US", {timeZone: "Europe/Helsinki"}));
-    
+    const finlandTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Helsinki' }))
+
     // Format for datetime-local input (YYYY-MM-DDTHH:MM)
-    const year = finlandTime.getFullYear();
-    const month = String(finlandTime.getMonth() + 1).padStart(2, '0');
-    const day = String(finlandTime.getDate()).padStart(2, '0');
-    const hours = String(finlandTime.getHours()).padStart(2, '0');
-    const minutes = String(finlandTime.getMinutes()).padStart(2, '0');
-    
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  };
+    const year = finlandTime.getFullYear()
+    const month = String(finlandTime.getMonth() + 1).padStart(2, '0')
+    const day = String(finlandTime.getDate()).padStart(2, '0')
+    const hours = String(finlandTime.getHours()).padStart(2, '0')
+    const minutes = String(finlandTime.getMinutes()).padStart(2, '0')
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`
+  }
 
   // Format datetime for input field (YYYY-MM-DDTHH:MM)
   const formatDateTimeForInput = (dateTimeString) => {
-    if (!dateTimeString) return '';
-    const date = new Date(dateTimeString);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  };
+    if (!dateTimeString) return ''
+    const date = new Date(dateTimeString)
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`
+  }
 
   const [formData, setFormData] = useState({
     startTime: getDefaultStartTime(),
@@ -59,72 +51,72 @@ function ReservationForm({ onSubmit, onCancel, clubId, reservation = null, isMod
     userId: localStorage.getItem('userId') || '',
     clubId: clubId || '',
     equipmentId: ''
-  });
+  })
 
   const fetchEquipment = useCallback(async () => {
     try {
-      setLoadingEquipment(true);
-      const data = await equipmentsService.getByClubId(clubId);
-      setEquipment(data.equipment || data); // Handle different response formats
+      setLoadingEquipment(true)
+      const data = await equipmentsService.getByClubId(clubId)
+      setEquipment(data.equipment || data) // Handle different response formats
     } catch (error) {
-      console.error('Failed to fetch equipment:', error);
-      setEquipment([]);
+      console.error('Failed to fetch equipment:', error)
+      setEquipment([])
     } finally {
-      setLoadingEquipment(false);
+      setLoadingEquipment(false)
     }
   }, [clubId])
 
   // Check for overlapping reservations and time validation
   const checkOverlaps = useCallback(async (equipmentId) => {
     if (!equipmentId || !formData.startTime || !formData.endTime) {
-      setAlertInfo(null);
-      return;
+      setAlertInfo(null)
+      return
     }
 
-    const selectedStartTime = new Date(formData.startTime);
-    const selectedEndTime = new Date(formData.endTime);
-    
+    const selectedStartTime = new Date(formData.startTime)
+    const selectedEndTime = new Date(formData.endTime)
+
     // Check if start time is before end time
     if (selectedStartTime >= selectedEndTime) {
       setAlertInfo({
         type: 'incorrect',
         message: 'Start time must be before end time'
-      });
-      return;
+      })
+      return
     }
 
     try {
-      setLoadingOverlapCheck(true);
-      const data = await reservationsService.getByClubId(clubId, { 
+      setLoadingOverlapCheck(true)
+      const data = await reservationsService.getByClubId(clubId, {
         equipmentId: equipmentId,
         showActive: 'true'
-      });
-      
+      })
+
       // Find all overlapping reservations
       const overlappingReservations = data.reservations.filter(r => {
-        const reservationStart = new Date(r.startTime);
-        const reservationEnd = new Date(r.endTime);
-        
+        const reservationStart = new Date(r.startTime)
+        const reservationEnd = new Date(r.endTime)
+
         // Check if there's any overlap
-        return !(selectedEndTime <= reservationStart || selectedStartTime >= reservationEnd);
-      });
-      
+        return !(selectedEndTime <= reservationStart || selectedStartTime >= reservationEnd)
+      })
+
       if (overlappingReservations.length > 0) {
         setAlertInfo({
           type: 'overlap',
           reservations: overlappingReservations
-        });
+        })
       } else {
         setAlertInfo({
           type: 'no-overlap',
           reservations: []
-        });
+        })
       }
     } catch (error) {
-      console.error('Failed to check overlaps:', error);
-      setAlertInfo(null);
+      console.error('Failed to check overlaps:', error)
+      setAlertInfo(null)
     } finally {
-      setLoadingOverlapCheck(false);
+      setLoadingOverlapCheck(false)
     }
   }, [clubId, formData.startTime, formData.endTime])
 
@@ -138,7 +130,7 @@ function ReservationForm({ onSubmit, onCancel, clubId, reservation = null, isMod
   // Check overlaps when equipment, start time, or end time changes
   useEffect(() => {
     if (formData.equipmentId) {
-      checkOverlaps(formData.equipmentId);
+      checkOverlaps(formData.equipmentId)
     }
   }, [formData.equipmentId, formData.startTime, formData.endTime, checkOverlaps])
 
@@ -152,46 +144,46 @@ function ReservationForm({ onSubmit, onCancel, clubId, reservation = null, isMod
         userId: reservation.userId || localStorage.getItem('userId') || '',
         clubId: reservation.clubId || clubId || '',
         equipmentId: reservation.equipmentId || ''
-      };
-      setFormData(formDataToSet);
+      }
+      setFormData(formDataToSet)
     }
   }, [reservation, isModify, clubId])
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
       [name]: value
-    }));
-  };
+    }))
+  }
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    
+    e.preventDefault()
+
     // Validate required fields
     if (!formData.startTime || !formData.endTime || !formData.equipmentId || !formData.clubId) {
-      alert('Please fill in all required fields: Start Time, End Time, Equipment');
-      return;
+      alert('Please fill in all required fields: Start Time, End Time, Equipment')
+      return
     }
 
     // Validate that end time is after start time
     if (new Date(formData.endTime) <= new Date(formData.startTime)) {
-      alert('End time must be after start time');
+      alert('End time must be after start time')
       return
     }
 
     // Convert date and time to proper datetime format for backend
-    const startDateTime = new Date(formData.startTime).toISOString();
-    const endDateTime = formData.endTime ? new Date(formData.endTime).toISOString() : null;
-    
+    const startDateTime = new Date(formData.startTime).toISOString()
+    const endDateTime = formData.endTime ? new Date(formData.endTime).toISOString() : null
+
     const reservationData = {
       ...formData,
       startTime: startDateTime,
       endTime: endDateTime
-    };
-    
-    onSubmit(reservationData);
-  };
+    }
+
+    onSubmit(reservationData)
+  }
 
   const handleCancel = () => {
     // Reset form data
@@ -202,10 +194,10 @@ function ReservationForm({ onSubmit, onCancel, clubId, reservation = null, isMod
       userId: localStorage.getItem('userId') || '',
       clubId: clubId || '',
       equipmentId: ''
-    });
-    setAlertInfo(null);
-    onCancel();
-  };
+    })
+    setAlertInfo(null)
+    onCancel()
+  }
 
   return (
     <Modal show={show} onHide={handleCancel} size="lg">
@@ -214,7 +206,7 @@ function ReservationForm({ onSubmit, onCancel, clubId, reservation = null, isMod
           {isModify ? 'Modify Reservation' : 'New Reservation'}
         </Modal.Title>
       </Modal.Header>
-      
+
       <Form onSubmit={handleSubmit}>
         <Modal.Body>
           <Row>
@@ -331,8 +323,8 @@ function ReservationForm({ onSubmit, onCancel, clubId, reservation = null, isMod
           <Button variant="secondary" onClick={handleCancel}>
             Cancel
           </Button>
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             type="submit"
             disabled={alertInfo && (alertInfo.type === 'overlap' || alertInfo.type === 'incorrect')}
           >
@@ -341,7 +333,7 @@ function ReservationForm({ onSubmit, onCancel, clubId, reservation = null, isMod
         </Modal.Footer>
       </Form>
     </Modal>
-  );
+  )
 }
 
 export default ReservationForm

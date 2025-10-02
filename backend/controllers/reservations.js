@@ -27,30 +27,30 @@ const canEditReservation = async (req, res, next) => {
   try {
     const userId = parseInt(req.decodedToken.id)
     console.log('Looking for reservation with ID:', req.params.id)
-    
+
     const reservation = await Reservation.findByPk(req.params.id)
-    
+
     if (!reservation) {
       return res.status(404).json({ error: 'Reservation not found' })
     }
-    
+
     console.log('Found reservation:', reservation.toJSON())
-    
+
     // Check if user is the owner of the reservation
     if (reservation.userId === userId) return next()
-    
+
     // Check if user is admin of the club that owns this reservation
     if (await findAdmin(userId, reservation.clubId)) return next()
-    
+
     // Check if user is superadmin
     if (await findSuperadmin(userId)) return next()
-    
+
     return res.status(401).json({ error: 'unauthorized' })
   } catch (error) {
     console.error('Error in canEditReservation:', error)
-    return res.status(500).json({ 
+    return res.status(500).json({
       error: 'Internal server error',
-      details: error.message 
+      details: error.message
     })
   }
 }
@@ -87,23 +87,23 @@ router.get('/club/:clubId', tokenExtractor, isMember, async (req, res) => {
   const { clubId } = req.params
   const { page = 1, limit = 20, userId = null, showActive = null, equipmentId = null, date = null } = req.query
   const currentUserId = parseInt(req.decodedToken.id)
-  
+
   try {
     const offset = (page - 1) * limit
-    
+
     // Build where clause
     let whereClause = {}
-    
+
     // Filter by user if specified
     if (userId) {
       whereClause.userId = parseInt(userId)
     }
-    
+
     // Filter by equipment if specified
     if (equipmentId) {
       whereClause.equipmentId = parseInt(equipmentId)
     }
-    
+
     // Filter by active status if specified
     if (showActive === 'true') {
       whereClause = {
@@ -123,24 +123,24 @@ router.get('/club/:clubId', tokenExtractor, isMember, async (req, res) => {
       startOfDay.setHours(0, 0, 0, 0)
       const endOfDay = new Date(date)
       endOfDay.setHours(23, 59, 59, 999)
-      
+
       whereClause = {
         ...whereClause,
         startTime: {
           [Op.between]: [startOfDay, endOfDay]
         }
       }
-      
+
       // Also filter out reservations that have already ended
       whereClause = {
         ...whereClause,
         endTime: { [Op.gt]: new Date() } // End time is in the future
       }
     }
-    
+
     // Determine ordering based on filter type
     let orderBy = [['startTime', 'ASC']] // Default for Future filter
-    
+
     if (userId) {
       // My filter - show most recent first (DESC)
       orderBy = [['startTime', 'DESC']]
@@ -148,7 +148,7 @@ router.get('/club/:clubId', tokenExtractor, isMember, async (req, res) => {
       // Future filter - show closest first (ASC)
       orderBy = [['startTime', 'ASC']]
     }
-    
+
     const reservations = await Reservation.findAndCountAll({
       where: {
         ...whereClause,
@@ -170,7 +170,7 @@ router.get('/club/:clubId', tokenExtractor, isMember, async (req, res) => {
       limit: parseInt(limit),
       offset: offset
     })
-    
+
     res.json({
       reservations: reservations.rows,
       pagination: {
@@ -191,18 +191,18 @@ router.post('/', tokenExtractor, async (req, res) => {
   try {
     const { startTime, endTime, equipmentId, clubId, detail } = req.body
     const userId = parseInt(req.decodedToken.id)
-    
+
     // Validate required fields
     if (!startTime || !endTime || !equipmentId || !clubId) {
-      return res.status(400).json({ 
-        error: 'startTime, endTime, equipmentId, and clubId are required' 
+      return res.status(400).json({
+        error: 'startTime, endTime, equipmentId, and clubId are required'
       })
     }
-    
+
     // Validate that endTime is after startTime
     if (new Date(endTime) <= new Date(startTime)) {
-      return res.status(400).json({ 
-        error: 'endTime must be after startTime' 
+      return res.status(400).json({
+        error: 'endTime must be after startTime'
       })
     }
 
@@ -232,7 +232,7 @@ router.post('/', tokenExtractor, async (req, res) => {
         overlaps: overlappingReservations
       })
     }
-    
+
     const reservation = new Reservation({
       startTime,
       endTime,
@@ -241,10 +241,10 @@ router.post('/', tokenExtractor, async (req, res) => {
       clubId,
       detail
     })
-    
+
     const savedReservation = await reservation.save()
     const reservationWithDetails = await Reservation.findByPk(savedReservation.id, getReservationQueryConfig())
-    
+
     res.status(201).json(reservationWithDetails)
   } catch (error) {
     logError('Error creating reservation:', error)
@@ -259,7 +259,7 @@ router.put('/:id', tokenExtractor, canEditReservation, async (req, res) => {
     if (reservation) {
       Object.assign(reservation, req.body)
       await reservation.save()
-      
+
       const updatedReservation = await Reservation.findByPk(reservation.id, getReservationQueryConfig())
       res.json(updatedReservation)
     } else {

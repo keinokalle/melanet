@@ -1,7 +1,7 @@
 const router = require('express').Router()
 const { info: logInfo, error: logError } = require('../util/logger')
 
-const { Club, Equipment } = require('../models')
+const { Club } = require('../models')
 
 const clubFinder = async (req, res, next) => {
   req.club = await Club.findByPk(req.params.id)
@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
   logInfo('Clubs retrieved:', JSON.stringify(clubs, null, 2))
   res.json(clubs)
 })
-  
+
 
 // Get club by its id
 router.get('/:id', clubFinder, async (req, res) => {
@@ -31,11 +31,11 @@ router.get('/:id', clubFinder, async (req, res) => {
 
 // Club can be created by superadmins
 router.post('/', async (req, res) => {
-  try {  
+  try {
     logInfo('POST /api/clubs - Request body:', req.body)
     const { name, location } = req.body
     logInfo('Extracted data:', { name, location })
-    
+
     const club = await Club.create({ name, location })
     logInfo('Club created successfully:', club.toJSON())
     res.json(club)

@@ -16,10 +16,10 @@ let testToken
 To be continued... first developing the frontend.
 */
 
-beforeEach(async () => { 
+beforeEach(async () => {
   // Regenerate the database before each test
-  
-  await User.destroy({where: {}})
+
+  await User.destroy({ where: {} })
   for (const user of helper.initialUsers) { await User.create(user) }
 
   const superadmin = {
@@ -48,7 +48,7 @@ beforeEach(async () => {
       password: 'password123',
     })
     .expect(200)
-  
+
   const loginResponseNormal = await api
     .post('/api/login')
     .send({
@@ -99,13 +99,13 @@ describe('Users tests', () => {
       .post('/api/users')
       .send(newUser)
       .expect(400) // Expecting bad request due to duplicate email
-    
+
     // Ensure no new user was added
     const usersAtEnd = await helper.usersInDb()
     assert.strictEqual(usersAtEnd.length, usersAtStart.length)
   })
 
-  test('POST /api/users fails if username is already taken', async () => { 
+  test('POST /api/users fails if username is already taken', async () => {
     const usersAtStart = await helper.usersInDb()
     const newUser = {
       username: 'superadmin',
@@ -118,7 +118,7 @@ describe('Users tests', () => {
       .post('/api/users')
       .send(newUser)
       .expect(400) // Expecting bad request due to duplicate username
-    
+
     // Ensure no new user was added
     const usersAtEnd = await helper.usersInDb()
     assert.strictEqual(usersAtEnd.length, usersAtStart.length)
@@ -148,7 +148,7 @@ describe('Users tests', () => {
       .get('/api/memberships/club/1')
       .set('Authorization', `Bearer ${testTokenSuperadmin}`)
       .expect(200)
-    
+
     assert.strictEqual(response.body.length, 2)
   })
 })
@@ -160,4 +160,4 @@ after(async () => {
   } catch (dbError) {
     logError('Error closing database:', dbError)
   }
-}) 
+})

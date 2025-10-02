@@ -58,8 +58,8 @@ router.get('/:id', equipmentFinder, async (req, res) => {
 
 // Create new equipment
 router.post('/', async (req, res) => {
-  try {  
-    const equipment = await Equipment.create({...req.body})
+  try {
+    const equipment = await Equipment.create({ ...req.body })
     res.json(equipment)
   } catch (error) {
     res.status(400).json({ error })

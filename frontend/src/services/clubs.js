@@ -28,4 +28,4 @@ const remove = async (id) => {
 }
 
 const clubsService = { getAll, getById, create, update, remove }
-export default clubsService 
+export default clubsService

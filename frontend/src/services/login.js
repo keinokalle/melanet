@@ -8,4 +8,4 @@ const login = async (credentials) => {
 }
 
 const loginService = { login }
-export default loginService 
+export default loginService

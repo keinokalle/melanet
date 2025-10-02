@@ -68,10 +68,10 @@ Paddle.init({
         throw new Error('End time must be after start time.')
       }
     },
-    
+
     async equipmentAvailabilityValidation() {
       if (!this.equipmentId) return // Skip validation if no equipment is selected
-      
+
       // Check for overlapping paddles
       const overlappingPaddles = await Paddle.findOne({
         where: {
@@ -93,7 +93,14 @@ Paddle.init({
       })
 
       if (overlappingPaddles) {
-        throw new Error('This equipment is already in use during the specified time slot.')
+        console.log('Overlapping paddle found:', {
+          id: overlappingPaddles.id,
+          equipmentId: overlappingPaddles.equipmentId,
+          startTime: overlappingPaddles.startTime,
+          endTime: overlappingPaddles.endTime,
+          userId: overlappingPaddles.userId
+        })
+        throw new Error(`This equipment is already in use during the specified time slot. Conflicting paddle ID: ${overlappingPaddles.id}, Start: ${overlappingPaddles.startTime}, End: ${overlappingPaddles.endTime}`)
       }
 
       // Check if equipment is currently in use (has startTime but no endTime)

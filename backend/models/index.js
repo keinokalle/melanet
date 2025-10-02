@@ -11,8 +11,13 @@ const Reservation = require('./reservation')
 Club.hasMany(Equipment)
 Equipment.belongsTo(Club)
 
+User.hasMany(Paddle)
 Paddle.belongsTo(User)
+
+Club.hasMany(Paddle)
 Paddle.belongsTo(Club)
+
+Equipment.hasMany(Paddle)
 Paddle.belongsTo(Equipment)
 
 Membership.belongsTo(User)

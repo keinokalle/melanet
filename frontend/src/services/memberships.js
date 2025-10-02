@@ -33,4 +33,4 @@ const remove = async (id) => {
 }
 
 const membershipsService = { getAll, getByUserId, getById, getByClubId, create, remove }
-export default membershipsService 
+export default membershipsService

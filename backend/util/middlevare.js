@@ -19,9 +19,9 @@ const errorHandler = (err, req, res, next) => {
   console.log('Error occurred:', err.name, err.message)
   logError('Error occurred:', err.name)
   if (err.name === 'SequelizeUniqueConstraintError') {
-    return res.status(400).json({error: 'the value must be unique'})
+    return res.status(400).json({ error: 'the value must be unique' })
   } else if (err.name === 'ReferenceError') {
-    return res.status(400).json({error: 'the value must be unique'})
+    return res.status(400).json({ error: 'the value must be unique' })
   }else if (err.name === 'JsonWebTokenError') {
     return res.status(401).json({ error: 'token missing or invalid' })
   } else if (err.name === 'TokenExpiredError') {
@@ -55,9 +55,9 @@ const tokenExtractor = (req, res, next) => {
 const isMember = async (req, res, next) => {
   const clubId = req.params.clubId
   const userId = req.decodedToken.id
-  
+
   console.log('🔍 Checking membership for user:', userId, 'club:', clubId)
-  
+
   try {
     // First check if user is a superadmin
     const user = await User.findByPk(userId)
@@ -65,7 +65,7 @@ const isMember = async (req, res, next) => {
       console.log('✅ User is superadmin')
       return next()
     }
-    
+
     // Then check if user is a member of the specific club
     const membership = await Membership.findOne({
       where: {
@@ -73,14 +73,14 @@ const isMember = async (req, res, next) => {
         clubId: clubId
       }
     })
-    
+
     console.log('Found membership:', membership ? 'YES' : 'NO')
-    
+
     if (!membership) {
       console.log('User not a member of club:', clubId)
       return res.status(401).json({ error: 'unauthorized' })
     }
-    
+
     console.log('User is a member of the club')
     next()
   } catch (error) {
@@ -93,14 +93,14 @@ const isMember = async (req, res, next) => {
 const isAdmin = async (req, res, next) => {
   const clubId = req.params.clubId
   const userId = req.decodedToken.id
-  
+
   try {
     // First check if user is a superadmin
     const user = await User.findByPk(userId)
     if (user && user.isSuperadmin) {
       return next()
     }
-    
+
     // Then check if user is a club admin for the specific club
     const membership = await Membership.findOne({
       where: {
@@ -109,11 +109,11 @@ const isAdmin = async (req, res, next) => {
         isAdmin: true
       }
     })
-    
+
     if (!membership) {
       return res.status(403).json({ error: 'You do not have permission to perform this action. Please contact your administrator.' })
     }
-    
+
     logInfo('HOOORAAYYYY!! User is a club admin')
     next()
   } catch (error) {

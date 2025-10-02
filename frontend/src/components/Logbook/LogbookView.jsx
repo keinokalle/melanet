@@ -7,16 +7,15 @@ import { handleApiError, createToast } from '../../util/errorHandler'
 import InfoModal from '../InfoModal'
 import InfoIcon from '../../assets/Info.svg'
 
-/**
+
 /**
  * Displays the full logbook page, including the list of paddling entries and the form to add new entries.
- * @component 
- * @param {Object} props - Component props
- * @param {string} props.clubId - The ID of the current club
- * @returns {JSX.Element} The rendered logbook view.
+ * If user doesn't have reservations, handles quick reservations too
+ * Paddle.jsx is the paddle "card" component
+ * PaddleForm.jsx is the filling form for new paddle records
  */
 
-function LogbookView({clubId, memberships, setClubChange}) {
+function LogbookView({ clubId, memberships, setClubChange }) {
   const [paddles, setPaddles] = useState([])
   const [showForm, setShowForm] = useState(false)
   const [modifyPaddle, setModifyPaddle] = useState(null)
@@ -39,9 +38,9 @@ function LogbookView({clubId, memberships, setClubChange}) {
     const userId = localStorage.getItem('userId')
     if (!userId) return { isPaddling: false, activePaddle: null, hasMultipleActive: false }
 
-    const activePaddles = paddles.filter(paddle => 
-      paddle.userId === parseInt(userId) && 
-      paddle.startTime && 
+    const activePaddles = paddles.filter(paddle =>
+      paddle.userId === parseInt(userId) &&
+      paddle.startTime &&
       !paddle.endTime
     )
 
@@ -70,10 +69,10 @@ function LogbookView({clubId, memberships, setClubChange}) {
       // Function to fetch paddles based on active filter
       const fetchPaddles = () => {
         setIsLoading(true)
-        
+
         // Build query parameters based on active filter
         let queryParams = {}
-        
+
         if (activeFilter === 'My') {
           queryParams.userId = localStorage.getItem('userId')
         } else if (activeFilter === 'Active') {
@@ -81,11 +80,11 @@ function LogbookView({clubId, memberships, setClubChange}) {
         } else if (activeFilter === 'All') {
           // No additional filters needed - show all
         }
-        
+
         paddlesService.getByClubId(clubId, queryParams)
           .then(data => {
             setPaddles(data.paddles)
-            console.log("Paddles with filter:", activeFilter, data.paddles)
+            console.log('Paddles with filter:', activeFilter, data.paddles)
           })
           .catch(err => {
             const { errorMessage, errorTitle } = handleApiError(err, 'paddles')
@@ -96,11 +95,11 @@ function LogbookView({clubId, memberships, setClubChange}) {
             setIsLoading(false)
           })
       }
-      
+
       fetchPaddles()
     }
   }, [clubId, activeFilter])
-    
+
 
   const handleSubmitPaddle = (paddleData) => {
     setIsLoading(true)
@@ -136,7 +135,7 @@ function LogbookView({clubId, memberships, setClubChange}) {
         })
         .finally(() => {
           setIsLoading(false)
-        })    
+        })
     } else {
       // Create new paddle
       paddlesService.create(paddleData)
@@ -227,9 +226,9 @@ function LogbookView({clubId, memberships, setClubChange}) {
             <div className="d-flex align-items-center justify-content-between">
               <div className="d-flex align-items-center">
                 <h2 className="mb-0 me-3">Logbook</h2>
-                <img 
-                  src={InfoIcon} 
-                  alt="Info" 
+                <img
+                  src={InfoIcon}
+                  alt="Info"
                   style={{ width: 24, height: 24, cursor: 'pointer' }}
                   onClick={() => setShowInfoModal(true)}
                   title="Click for instructions"
@@ -237,14 +236,14 @@ function LogbookView({clubId, memberships, setClubChange}) {
               </div>
               <Dropdown>
                 <Dropdown.Toggle variant="outline-primary" id="club-dropdown">
-                  {memberships.find(m => m.clubId === clubId) ? 
-                    memberships.find(m => m.clubId === clubId).clubName : 
+                  {memberships.find(m => m.clubId === clubId) ?
+                    memberships.find(m => m.clubId === clubId).clubName :
                     'Select Club'
                   }
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
                   {memberships.map((membership) => (
-                    <Dropdown.Item 
+                    <Dropdown.Item
                       key={membership.clubId}
                       onClick={() => setClubChange(membership.clubId)}
                       active={membership.clubId === clubId}
@@ -259,9 +258,9 @@ function LogbookView({clubId, memberships, setClubChange}) {
             <div className="d-flex align-items-center justify-content-between">
               <div className="d-flex align-items-center">
                 <h2 className="mb-0 me-3">Logbook</h2>
-                <img 
-                  src={InfoIcon} 
-                  alt="Info" 
+                <img
+                  src={InfoIcon}
+                  alt="Info"
                   style={{ width: 24, height: 24, cursor: 'pointer' }}
                   onClick={() => setShowInfoModal(true)}
                   title="Click for instructions"
@@ -281,30 +280,30 @@ function LogbookView({clubId, memberships, setClubChange}) {
           <div className="d-flex justify-content-between align-items-center">
             {/* Filter Button Group */}
             <div className="btn-group" role="group" aria-label="Paddle filters">
-              <Button 
+              <Button
                 variant={activeFilter === 'My' ? 'primary' : 'outline-secondary'}
                 onClick={() => handleFilterClick('My')}
               >
                 My
               </Button>
-              <Button 
+              <Button
                 variant={activeFilter === 'Active' ? 'primary' : 'outline-secondary'}
                 onClick={() => handleFilterClick('Active')}
               >
                 Active
               </Button>
-              <Button 
+              <Button
                 variant={activeFilter === 'All' ? 'primary' : 'outline-secondary'}
                 onClick={() => handleFilterClick('All')}
               >
                 All
               </Button>
             </div>
-            
+
             {/* New Paddle Button */}
             <div className="text-end">
-              <Button 
-                variant={isPaddling ? "warning" : "primary"}
+              <Button
+                variant={isPaddling ? 'warning' : 'primary'}
                 onClick={handleMainButtonClick}
                 disabled={isLoading}
               >
@@ -323,10 +322,10 @@ function LogbookView({clubId, memberships, setClubChange}) {
       </Row>
 
       {/* PaddleForm Modal */}
-      <PaddleForm 
+      <PaddleForm
         show={showForm || !!modifyPaddle}
-        onSubmit={handleSubmitPaddle} 
-        onCancel={handleCancelForm} 
+        onSubmit={handleSubmitPaddle}
+        onCancel={handleCancelForm}
         clubId={clubId}
         paddle={modifyPaddle}
         isModify={!!modifyPaddle}
@@ -350,7 +349,7 @@ function LogbookView({clubId, memberships, setClubChange}) {
               paddles
                 .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
                 .map((paddle, idx) => (
-                  <Paddle key={idx} paddle={paddle} onDelete={handleDeletePaddle} onModify={handleModifyPaddle}/> 
+                  <Paddle key={idx} paddle={paddle} onDelete={handleDeletePaddle} onModify={handleModifyPaddle}/>
                 ))
             )}
           </div>
@@ -368,4 +367,4 @@ function LogbookView({clubId, memberships, setClubChange}) {
   )
 }
 
-export default LogbookView; 
+export default LogbookView
