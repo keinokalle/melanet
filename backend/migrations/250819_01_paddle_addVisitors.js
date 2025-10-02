@@ -7,11 +7,11 @@ module.exports = {
       type: DataTypes.INTEGER,
       allowNull: true,
       after: 'additional_info'
-    });
+    })
   },
 
   down: async ({ context: queryInterface }) => {
     // Remove visitors field from paddles table
-    await queryInterface.removeColumn('paddles', 'visitors');
+    await queryInterface.removeColumn('paddles', 'visitors')
   }
-};
+}

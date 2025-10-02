@@ -37,9 +37,9 @@ const migrationConf = {
 const runMigrations = async () => {
   const migrator = new Umzug(migrationConf)
   const migrations = await migrator.up()
-      logInfo('Migrations up to date', {
-      files: migrations.map((mig) => mig.name),
-    })
+  logInfo('Migrations up to date', {
+    files: migrations.map((mig) => mig.name),
+  })
 }
 
 const rollbackMigration = async () => {

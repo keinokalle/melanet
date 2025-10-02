@@ -6,7 +6,7 @@ module.exports = {
     // because users can have multiple memberships
 
     // Remove the old 'role' column from users
-    await queryInterface.removeColumn('users', 'role');
+    await queryInterface.removeColumn('users', 'role')
     // Add the new 'role' column with ENUM type to memberships
     await queryInterface.addColumn('memberships', 'role', {
       type: DataTypes.ENUM('user', 'admin', 'superadmin'),
@@ -22,13 +22,13 @@ module.exports = {
   },
   down: async ({ context: queryInterface }) => {
     // Remove the 'role' column from memberships
-    await queryInterface.removeColumn('memberships', 'role');
+    await queryInterface.removeColumn('memberships', 'role')
     // Add the 'role' column back to users
     await queryInterface.addColumn('users', 'role', {
       type: DataTypes.ENUM('user', 'admin', 'superadmin'),
       allowNull: false,
       defaultValue: 'user'
-    });
+    })
 
     // Also, equipment type should be a string again
     await queryInterface.changeColumn('equipment', 'type', {

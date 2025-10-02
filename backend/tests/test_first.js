@@ -100,7 +100,7 @@ describe('Users tests', () => {
       .send(newUser)
       .expect(400) // Expecting bad request due to duplicate email
     
-      // Ensure no new user was added
+    // Ensure no new user was added
     const usersAtEnd = await helper.usersInDb()
     assert.strictEqual(usersAtEnd.length, usersAtStart.length)
   })
@@ -119,7 +119,7 @@ describe('Users tests', () => {
       .send(newUser)
       .expect(400) // Expecting bad request due to duplicate username
     
-      // Ensure no new user was added
+    // Ensure no new user was added
     const usersAtEnd = await helper.usersInDb()
     assert.strictEqual(usersAtEnd.length, usersAtStart.length)
   })

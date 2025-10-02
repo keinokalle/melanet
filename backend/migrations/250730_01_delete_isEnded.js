@@ -3,7 +3,7 @@
 module.exports = {
   up: async ({ context: queryInterface }) => {
     // Remove the 'isEnded' column from the 'paddles' table
-    await queryInterface.removeColumn('paddles', 'ended');
+    await queryInterface.removeColumn('paddles', 'ended')
   },
 
   down: async (queryInterface, Sequelize) => {

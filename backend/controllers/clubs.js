@@ -22,7 +22,7 @@ router.get('/', async (req, res) => {
 // Get club by its id
 router.get('/:id', clubFinder, async (req, res) => {
   if (req.club) {
-    logger.info('Club retrieved:', req.club.toJSON())
+    logInfo('Club retrieved:', req.club.toJSON())
     res.json(req.club)
   } else {
     res.status(404).end()
@@ -32,16 +32,16 @@ router.get('/:id', clubFinder, async (req, res) => {
 // Club can be created by superadmins
 router.post('/', async (req, res) => {
   try {  
-    logInfo('POST /api/clubs - Request body:', req.body);
+    logInfo('POST /api/clubs - Request body:', req.body)
     const { name, location } = req.body
-    logInfo('Extracted data:', { name, location });
+    logInfo('Extracted data:', { name, location })
     
     const club = await Club.create({ name, location })
-    logInfo('Club created successfully:', club.toJSON());
+    logInfo('Club created successfully:', club.toJSON())
     res.json(club)
   } catch (error) {
-      logError('Error creating club:', error.message);
-      logError('Full error:', error);
+    logError('Error creating club:', error.message)
+    logError('Full error:', error)
     res.status(400).json({ error: error.message })
   }
 })

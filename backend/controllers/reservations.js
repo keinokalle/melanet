@@ -119,17 +119,17 @@ router.get('/club/:clubId', tokenExtractor, isMember, async (req, res) => {
 
     // Filter by specific date if specified
     if (date) {
-      const startOfDay = new Date(date);
-      startOfDay.setHours(0, 0, 0, 0);
-      const endOfDay = new Date(date);
-      endOfDay.setHours(23, 59, 59, 999);
+      const startOfDay = new Date(date)
+      startOfDay.setHours(0, 0, 0, 0)
+      const endOfDay = new Date(date)
+      endOfDay.setHours(23, 59, 59, 999)
       
       whereClause = {
         ...whereClause,
         startTime: {
           [Op.between]: [startOfDay, endOfDay]
         }
-      };
+      }
       
       // Also filter out reservations that have already ended
       whereClause = {
@@ -224,13 +224,13 @@ router.post('/', tokenExtractor, async (req, res) => {
           }
         ]
       }
-    });
+    })
 
     if (overlappingReservations.length > 0) {
       return res.status(400).json({
         error: 'Reservation overlaps with existing reservations',
         overlaps: overlappingReservations
-      });
+      })
     }
     
     const reservation = new Reservation({

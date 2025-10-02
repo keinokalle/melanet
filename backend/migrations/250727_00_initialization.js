@@ -17,7 +17,7 @@ module.exports = {
       location: {
         type: DataTypes.STRING
       }
-    });
+    })
 
     // Create users table
     await queryInterface.createTable('users', {
@@ -54,7 +54,7 @@ module.exports = {
       profilepicture: {
         type: DataTypes.TEXT
       }
-    });
+    })
 
     // Create equipment table
     await queryInterface.createTable('equipment', {
@@ -86,7 +86,7 @@ module.exports = {
       price: {
         type: DataTypes.FLOAT
       }
-    });
+    })
 
     // Add foreign keys to equipment table
     try {
@@ -94,14 +94,14 @@ module.exports = {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: { model: 'clubs', key: 'id' },
-      });
+      })
     } catch (error) {
-      console.log('club_id column might already exist, skipping...');
+      console.log('club_id column might already exist, skipping...')
     }
   },
   down: async ({ context: queryInterface }) => {
-    await queryInterface.dropTable('equipment');
-    await queryInterface.dropTable('users');
-    await queryInterface.dropTable('clubs');
+    await queryInterface.dropTable('equipment')
+    await queryInterface.dropTable('users')
+    await queryInterface.dropTable('clubs')
   }
 }

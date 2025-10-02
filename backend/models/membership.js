@@ -42,4 +42,4 @@ Membership.init(
   }
 )
 
-module.exports = Membership;
+module.exports = Membership

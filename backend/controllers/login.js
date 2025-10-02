@@ -24,8 +24,8 @@ router.post('/', requestLogger, async (request, response) => {
       error: 'password is required'
     })
   }
-  logInfo('Password provided:', body.password);
-  logInfo('Stored password hash:', user.passwordhash);
+  logInfo('Password provided:', body.password)
+  logInfo('Stored password hash:', user.passwordhash)
 
   const passwordCorrect =
     user === null ? false : await bcrypt.compare(body.password, user.passwordhash)

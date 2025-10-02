@@ -65,12 +65,12 @@ Paddle.init({
   validate: {
     async endTimeValidation() {
       if (this.endTime && this.startTime && this.endTime <= this.startTime) {
-        throw new Error('End time must be after start time.');
+        throw new Error('End time must be after start time.')
       }
     },
     
     async equipmentAvailabilityValidation() {
-      if (!this.equipmentId) return; // Skip validation if no equipment is selected
+      if (!this.equipmentId) return // Skip validation if no equipment is selected
       
       // Check for overlapping paddles
       const overlappingPaddles = await Paddle.findOne({
@@ -90,10 +90,10 @@ Paddle.init({
             }
           ]
         }
-      });
+      })
 
       if (overlappingPaddles) {
-        throw new Error('This equipment is already in use during the specified time slot.');
+        throw new Error('This equipment is already in use during the specified time slot.')
       }
 
       // Check if equipment is currently in use (has startTime but no endTime)
@@ -107,7 +107,7 @@ Paddle.init({
       })
 
       if (currentlyInUse) {
-        throw new Error('This equipment is currently in use and cannot be used in the system.');
+        throw new Error('This equipment is currently in use and cannot be used in the system.')
       }
     }
   }

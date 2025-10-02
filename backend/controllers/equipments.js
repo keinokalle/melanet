@@ -18,8 +18,8 @@ router.get('/', async (req, res) => {
       attributes: ['name']
     }
   })
-    logInfo('GET /api/equipments')
-    logInfo('Equipments retrieved:', JSON.stringify(equipments, null, 2))
+  logInfo('GET /api/equipments')
+  logInfo('Equipments retrieved:', JSON.stringify(equipments, null, 2))
   res.json(equipments)
 })
 
@@ -49,7 +49,7 @@ router.get('/club/:clubId', async (req, res) => {
 // Get equipment by its id
 router.get('/:id', equipmentFinder, async (req, res) => {
   if (req.equipment) {
-          logInfo('Equipment retrieved:', req.equipment.toJSON())
+    logInfo('Equipment retrieved:', req.equipment.toJSON())
     res.json(req.equipment)
   } else {
     res.status(404).end()

@@ -16,7 +16,7 @@ const unknownEndpoint = (req, res) => {
 }
 
 const errorHandler = (err, req, res, next) => {
-  console.log("Error occurred:", err.name, err.message)
+  console.log('Error occurred:', err.name, err.message)
   logError('Error occurred:', err.name)
   if (err.name === 'SequelizeUniqueConstraintError') {
     return res.status(400).json({error: 'the value must be unique'})
@@ -33,7 +33,7 @@ const errorHandler = (err, req, res, next) => {
 }
 
 const tokenExtractor = (req, res, next) => {
-  logInfo("starting to extract token")
+  logInfo('starting to extract token')
   const authorization = req.get('authorization')
   if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
     try {
@@ -53,17 +53,17 @@ const tokenExtractor = (req, res, next) => {
 
 // Checks if a user is a member of the club at hand
 const isMember = async (req, res, next) => {
-  const clubId = req.params.clubId;
-  const userId = req.decodedToken.id;
+  const clubId = req.params.clubId
+  const userId = req.decodedToken.id
   
-  console.log('🔍 Checking membership for user:', userId, 'club:', clubId);
+  console.log('🔍 Checking membership for user:', userId, 'club:', clubId)
   
   try {
     // First check if user is a superadmin
-    const user = await User.findByPk(userId);
+    const user = await User.findByPk(userId)
     if (user && user.isSuperadmin) {
-      console.log('✅ User is superadmin');
-      return next();
+      console.log('✅ User is superadmin')
+      return next()
     }
     
     // Then check if user is a member of the specific club
@@ -72,33 +72,33 @@ const isMember = async (req, res, next) => {
         userId: userId,
         clubId: clubId
       }
-    });
+    })
     
-    console.log('🔍 Found membership:', membership ? 'YES' : 'NO');
+    console.log('Found membership:', membership ? 'YES' : 'NO')
     
     if (!membership) {
-      console.log('❌ User not a member of club:', clubId);
-      return res.status(401).json({ error: 'unauthorized' });
+      console.log('User not a member of club:', clubId)
+      return res.status(401).json({ error: 'unauthorized' })
     }
     
-    console.log('✅ User is a member of the club');
-    next();
+    console.log('User is a member of the club')
+    next()
   } catch (error) {
-    console.error('❌ Error in isMember:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('Error in isMember:', error)
+    return res.status(500).json({ error: 'Internal server error' })
   }
 }
 
 // Checks if a user is a club admin for the club at hand
 const isAdmin = async (req, res, next) => {
-  const clubId = req.params.clubId;
-  const userId = req.decodedToken.id;
+  const clubId = req.params.clubId
+  const userId = req.decodedToken.id
   
   try {
     // First check if user is a superadmin
-    const user = await User.findByPk(userId);
+    const user = await User.findByPk(userId)
     if (user && user.isSuperadmin) {
-      return next();
+      return next()
     }
     
     // Then check if user is a club admin for the specific club
@@ -108,16 +108,16 @@ const isAdmin = async (req, res, next) => {
         clubId: clubId,
         isAdmin: true
       }
-    });
+    })
     
     if (!membership) {
-      return res.status(403).json({ error: 'You do not have permission to perform this action. Please contact your administrator.' });
+      return res.status(403).json({ error: 'You do not have permission to perform this action. Please contact your administrator.' })
     }
     
     logInfo('HOOORAAYYYY!! User is a club admin')
-    next();
+    next()
   } catch (error) {
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' })
   }
 }
 
